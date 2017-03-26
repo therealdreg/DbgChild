@@ -1,0 +1,120 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Project">
+  <TemplateData>
+    <Name>PluginTemplateExprfunc</Name>
+    <Description>Plugin template for x64dbg (expression function).</Description>
+    <ProjectType>VC</ProjectType>
+    <ProjectSubType>
+    </ProjectSubType>
+    <SortOrder>1000</SortOrder>
+    <CreateNewFolder>true</CreateNewFolder>
+    <DefaultName>PluginTemplate</DefaultName>
+    <ProvideDefaultName>true</ProvideDefaultName>
+    <LocationField>Enabled</LocationField>
+    <EnableLocationBrowseButton>true</EnableLocationBrowseButton>
+    <Icon>__TemplateIcon.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <Project TargetFileName="PluginTemplate.vcxproj" File="PluginTemplate.vcxproj" ReplaceParameters="true">
+      <ProjectItem ReplaceParameters="false" TargetFileName="$projectname$.vcxproj.filters">PluginTemplate.vcxproj.filters</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="plugin.cpp">plugin.cpp</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="pluginmain.cpp">pluginmain.cpp</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="plugin.h">plugin.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="pluginmain.h">pluginmain.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="bridgegraph.h">PLUGINSDK\bridgegraph.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="bridgelist.h">PLUGINSDK\bridgelist.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="bridgemain.h">PLUGINSDK\bridgemain.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_dbgfunctions.h">PLUGINSDK\_dbgfunctions.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_plugins.h">PLUGINSDK\_plugins.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_plugin_types.h">PLUGINSDK\_plugin_types.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi.h">PLUGINSDK\_scriptapi.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_argument.h">PLUGINSDK\_scriptapi_argument.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_assembler.h">PLUGINSDK\_scriptapi_assembler.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_bookmark.h">PLUGINSDK\_scriptapi_bookmark.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_comment.h">PLUGINSDK\_scriptapi_comment.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_debug.h">PLUGINSDK\_scriptapi_debug.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_flag.h">PLUGINSDK\_scriptapi_flag.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_function.h">PLUGINSDK\_scriptapi_function.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_gui.h">PLUGINSDK\_scriptapi_gui.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_label.h">PLUGINSDK\_scriptapi_label.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_memory.h">PLUGINSDK\_scriptapi_memory.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_misc.h">PLUGINSDK\_scriptapi_misc.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_module.h">PLUGINSDK\_scriptapi_module.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_pattern.h">PLUGINSDK\_scriptapi_pattern.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_register.h">PLUGINSDK\_scriptapi_register.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_stack.h">PLUGINSDK\_scriptapi_stack.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="_scriptapi_symbol.h">PLUGINSDK\_scriptapi_symbol.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="arm.h">PLUGINSDK\CAPSTONE\arm.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="arm64.h">PLUGINSDK\CAPSTONE\arm64.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="capstone.h">PLUGINSDK\CAPSTONE\capstone.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="m68k.h">PLUGINSDK\CAPSTONE\m68k.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="mips.h">PLUGINSDK\CAPSTONE\mips.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="platform.h">PLUGINSDK\CAPSTONE\platform.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="ppc.h">PLUGINSDK\CAPSTONE\ppc.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="sparc.h">PLUGINSDK\CAPSTONE\sparc.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="systemz.h">PLUGINSDK\CAPSTONE\systemz.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="x86.h">PLUGINSDK\CAPSTONE\x86.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="xcore.h">PLUGINSDK\CAPSTONE\xcore.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="dbghelp.h">PLUGINSDK\DBGHELP\dbghelp.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="DeviceNameResolver.h">PLUGINSDK\DEVICENAMERESOLVER\DeviceNameResolver.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="jansson.h">PLUGINSDK\JANSSON\jansson.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="jansson_config.h">PLUGINSDK\JANSSON\jansson_config.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="jansson_x64dbg.h">PLUGINSDK\JANSSON\jansson_x64dbg.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="lz4.h">PLUGINSDK\LZ4\lz4.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="lz4file.h">PLUGINSDK\LZ4\lz4file.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="lz4hc.h">PLUGINSDK\LZ4\lz4hc.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="TitanEngine.h">PLUGINSDK\TITANENGINE\TitanEngine.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="XEDParse.h">PLUGINSDK\XEDPARSE\XEDParse.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="yara.h">PLUGINSDK\YARA\yara.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="ahocorasick.h">PLUGINSDK\YARA\YARA\ahocorasick.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="arena.h">PLUGINSDK\YARA\YARA\arena.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="atoms.h">PLUGINSDK\YARA\YARA\atoms.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="compiler.h">PLUGINSDK\YARA\YARA\compiler.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="elf.h">PLUGINSDK\YARA\YARA\elf.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="error.h">PLUGINSDK\YARA\YARA\error.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="exec.h">PLUGINSDK\YARA\YARA\exec.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="exefiles.h">PLUGINSDK\YARA\YARA\exefiles.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="filemap.h">PLUGINSDK\YARA\YARA\filemap.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="globals.h">PLUGINSDK\YARA\YARA\globals.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="hash.h">PLUGINSDK\YARA\YARA\hash.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="hex_lexer.h">PLUGINSDK\YARA\YARA\hex_lexer.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="integers.h">PLUGINSDK\YARA\YARA\integers.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="lexer.h">PLUGINSDK\YARA\YARA\lexer.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="libyara.h">PLUGINSDK\YARA\YARA\libyara.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="limits.h">PLUGINSDK\YARA\YARA\limits.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="mem.h">PLUGINSDK\YARA\YARA\mem.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="modules.h">PLUGINSDK\YARA\YARA\modules.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="object.h">PLUGINSDK\YARA\YARA\object.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="parser.h">PLUGINSDK\YARA\YARA\parser.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="pe.h">PLUGINSDK\YARA\YARA\pe.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="proc.h">PLUGINSDK\YARA\YARA\proc.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="re.h">PLUGINSDK\YARA\YARA\re.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="re_lexer.h">PLUGINSDK\YARA\YARA\re_lexer.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="rules.h">PLUGINSDK\YARA\YARA\rules.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="scan.h">PLUGINSDK\YARA\YARA\scan.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="sizedstr.h">PLUGINSDK\YARA\YARA\sizedstr.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="stream.h">PLUGINSDK\YARA\YARA\stream.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="strutils.h">PLUGINSDK\YARA\YARA\strutils.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="threading.h">PLUGINSDK\YARA\YARA\threading.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="types.h">PLUGINSDK\YARA\YARA\types.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="utils.h">PLUGINSDK\YARA\YARA\utils.h</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="x32bridge.lib">PLUGINSDK\x32bridge.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="x32dbg.lib">PLUGINSDK\x32dbg.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="x64bridge.lib">PLUGINSDK\x64bridge.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="x64dbg.lib">PLUGINSDK\x64dbg.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="capstone_x86.lib">PLUGINSDK\CAPSTONE\capstone_x86.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="capstone_x64.lib">PLUGINSDK\CAPSTONE\capstone_x64.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="DeviceNameResolver_x86.lib">PLUGINSDK\DEVICENAMERESOLVER\DeviceNameResolver_x86.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="DeviceNameResolver_x64.lib">PLUGINSDK\DEVICENAMERESOLVER\DeviceNameResolver_x64.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="jansson_x86.lib">PLUGINSDK\JANSSON\jansson_x86.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="jansson_x64.lib">PLUGINSDK\JANSSON\jansson_x64.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="lz4_x86.lib">PLUGINSDK\LZ4\lz4_x86.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="lz4_x64.lib">PLUGINSDK\LZ4\lz4_x64.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="TitanEngine_x86.lib">PLUGINSDK\TITANENGINE\TitanEngine_x86.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="TitanEngine_x64.lib">PLUGINSDK\TITANENGINE\TitanEngine_x64.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="XEDParse_x86.lib">PLUGINSDK\XEDPARSE\XEDParse_x86.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="XEDParse_x64.lib">PLUGINSDK\XEDPARSE\XEDParse_x64.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="yara_x86.lib">PLUGINSDK\YARA\yara_x86.lib</ProjectItem>
+      <ProjectItem ReplaceParameters="false" TargetFileName="yara_x64.lib">PLUGINSDK\YARA\yara_x64.lib</ProjectItem>
+    </Project>
+  </TemplateContent>
+</VSTemplate>
