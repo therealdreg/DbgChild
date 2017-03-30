@@ -149,10 +149,10 @@ bool PatchUnpatchNTDLL(DWORD pid, bool patch)
         putchar('\n');
 
         VirtualProtectEx(hProcess, (LPVOID)PAGE_ROUND_DOWN(ntdll_ep), PAGE_SIZE,
-            PAGE_READWRITE,
+            PAGE_EXECUTE_READWRITE,
             &old_protect);
 
-        printf("changed remote page rights 0x%" PRIXPTR " to PAGE_READWRITE\n", (uintptr_t)PAGE_ROUND_DOWN(ntdll_ep));
+        printf("changed remote page rights 0x%" PRIXPTR " to PAGE_EXECUTE_READWRITE\n", (uintptr_t)PAGE_ROUND_DOWN(ntdll_ep));
 
         WriteProcessMemory(hProcess, ntdll_ep, jmp_itfself, sizeof(jmp_itfself),
             &bytes_written);

@@ -620,7 +620,7 @@ BOOL PatchCode(
 
     VirtualProtectEx(process, (LPVOID)PAGE_ROUND_DOWN(address),
         PAGE_SIZE,
-        PAGE_READWRITE,
+        PAGE_EXECUTE_READWRITE,
         &old_protect);
 
     if (original_code != NULL)
