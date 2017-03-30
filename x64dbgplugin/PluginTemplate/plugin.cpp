@@ -48,6 +48,10 @@ void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
             ReleaseMutex(hMutex);
             result = MessageBoxA(NULL, "NewProcessWatcher is not running, do you want launch it?", PLUGIN_NAME, MB_YESNO | MB_ICONQUESTION | MB_TOPMOST);
         }
+        else
+        {
+            _plugin_logprintf("[" PLUGIN_NAME "] NewProcessWatcher already Open");
+        }
     }
 
     if (result == IDYES)
@@ -80,7 +84,11 @@ void GetCurrentPath(WCHAR * current_path)
 
 PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
 {
-    if (info->hEntry != MENU_INFO && info->hEntry != MENU_HELP)
+    if (info->hEntry != MENU_INFO && 
+        info->hEntry != MENU_HELP &&
+        info->hEntry != MENU_NEW_PROCESS_WATCHER &&
+        info->hEntry != MENU_NEW_PROCESS_WATCHER_OLD
+        )
     {
         if (!DbgIsDebugging())
         {
