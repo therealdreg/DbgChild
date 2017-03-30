@@ -262,7 +262,7 @@ DWORD WINAPI PostProcess(_In_ LPVOID lpParameter)
     DWORD pid = (DWORD)lpParameter;
     DWORD main_tid = 0;
 
-    wprintf(L"TID %d Created! - POST PROCESS: %d\n", GetCurrentThreadId(), pid);
+    wprintf(L"TID %d POST PROCESS: %d\n", GetCurrentThreadId(), pid);
 
     main_tid = GetMainTIDFromPID(pid);
 
@@ -328,15 +328,26 @@ DWORD WINAPI PostProcess(_In_ LPVOID lpParameter)
     return 0;
 }
 
-DWORD ProcesCreated(wchar_t * file_name, wchar_t * path)
+typedef struct
 {
-    DWORD pid = _wtoi(file_name);
-    wchar_t * full_path = (wchar_t*) calloc(1, sizeof(wchar_t) * MAX_PATH);
-    char* type_pid = NULL;
+    wchar_t file_name[MAX_PATH];
+    wchar_t path[MAX_PATH];
+} PROCESS_CREATED_PARAMS_t;
 
-    wcscpy_s(full_path, MAX_PATH, path);
+DWORD WINAPI ProcesCreated(_In_ LPVOID lpParameter)
+{
+    DWORD pid = 0;
+    wchar_t full_path[MAX_PATH] = { 0 };
+    char* type_pid = NULL;
+    PROCESS_CREATED_PARAMS_t* params = (PROCESS_CREATED_PARAMS_t*)lpParameter;
+
+    pid = _wtoi(params->file_name);
+
+    wprintf(L"TID %d PROCESS CREATED: %d\n", GetCurrentThreadId(), pid);
+
+    wcscpy_s(full_path, MAX_PATH, params->path);
     wcscat_s(full_path, MAX_PATH, L"\\");
-    wcscat_s(full_path, MAX_PATH, file_name);
+    wcscat_s(full_path, MAX_PATH, params->file_name);
 
     wprintf(L"TID[%d] - Created PID: %d - FULL PATH: %s\n", GetCurrentThreadId(), pid, full_path);
     WCHAR pre_cmd[MAX_PATH];
@@ -387,15 +398,9 @@ DWORD ProcesCreated(wchar_t * file_name, wchar_t * path)
 
     CloseHandle(hFile);
 
-    CreateThread(
-        NULL,
-        0,
-        PostProcess,
-        (LPVOID) pid,
-        0,
-        NULL
-    );
+    PostProcess((LPVOID)pid);
 
+    free(lpParameter);
     
     return 0;
 }
@@ -471,7 +476,18 @@ DWORD WINAPI NewProcessWatcher(_In_ LPVOID lpParameter)
                             {
                                 memcpy(file_name, actual_FileNotifyInfo->FileName, actual_FileNotifyInfo->FileNameLength);
                                 wprintf(L"TID[%d] - New file created/renamed: %s\n", GetCurrentThreadId() , file_name);
-                                ProcesCreated(file_name, path_watch);
+
+                                PROCESS_CREATED_PARAMS_t * process_created_params = (PROCESS_CREATED_PARAMS_t *) calloc(1, sizeof(PROCESS_CREATED_PARAMS_t));
+                                wcscpy_s(process_created_params->file_name, file_name);
+                                wcscpy_s(process_created_params->path, path_watch); 
+                                CreateThread(
+                                    NULL,
+                                    0,
+                                    ProcesCreated,
+                                    (LPVOID)process_created_params,
+                                    0,
+                                    NULL
+                                );
                             }
                             else
                             {
@@ -495,7 +511,67 @@ DWORD WINAPI NewProcessWatcher(_In_ LPVOID lpParameter)
     return 0;
 }
 
-int main()
+#include <iostream>
+#include <vector>
+
+int OldProcesses(wchar_t* x86_path, wchar_t* x64_path)
+{
+    WIN32_FIND_DATAW ffd = { 0 };
+    wchar_t* paths[] = { x86_path, x64_path };
+    std::vector<HANDLE> array_handle;
+
+    for (int i = 0; i < ARRAYSIZE(paths); i++)
+    { 
+        HANDLE hFind;
+        WCHAR actual_path_api_spec[MAX_PATH];
+
+        ZeroMemory(actual_path_api_spec, sizeof(actual_path_api_spec));
+        wcscpy_s(actual_path_api_spec, paths[i]);
+        wcscat_s(actual_path_api_spec, L"\\*");
+
+        wprintf(L"Watching: %s\n", paths[i]);
+        
+        hFind = FindFirstFileW(actual_path_api_spec, &ffd);
+
+        if (INVALID_HANDLE_VALUE == hFind)
+        {
+            continue;
+        }
+
+        do
+        {
+            if (!(ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+            {
+                wprintf(L"FILE FOUND: %s\n", ffd.cFileName);
+                PROCESS_CREATED_PARAMS_t * process_created_params = (PROCESS_CREATED_PARAMS_t *) calloc(1, sizeof(PROCESS_CREATED_PARAMS_t));
+                wcscpy_s(process_created_params->file_name, ffd.cFileName);
+                wcscpy_s(process_created_params->path, paths[i]);
+                array_handle.push_back(
+                        CreateThread(
+                        NULL,
+                        0,
+                        ProcesCreated,
+                        (LPVOID)process_created_params,
+                        0,
+                        NULL
+                    )
+                ); 
+            }
+        } while (FindNextFileW(hFind, &ffd) != 0);
+
+        FindClose(hFind);
+    }
+
+    printf("Waiting all POST PROCESS Threads to finish...\n");
+    for (auto &i : array_handle) 
+    {
+        WaitForSingleObject(i, INFINITE);
+    }
+
+    return 0;
+}
+
+int main(int argc, char** argv)
 {
     puts("\n"
         "DbgChild - New Process Watcher\n"
@@ -507,17 +583,30 @@ int main()
         "https://github.com/David-Reguera-Garcia-Dreg\n"
         "dreg@fr33project.org\n"
     );
+    BOOL old_processes = FALSE;
 
-    HANDLE hMutex = OpenMutexW(MUTEX_ALL_ACCESS, 0, L"NewProcessWatcherDreg");
-
-    if (!hMutex)
+    if (argc > 1)
     {
-        hMutex = CreateMutexW(0, 0, L"NewProcessWatcherDreg");
+        if (tolower(argv[1][0]) == 'o')
+        {
+            puts("Watching old processes...");
+            old_processes = TRUE;
+        }
     }
-    else
+
+    if (old_processes == FALSE)
     {
-        MessageBoxW(NULL, L"THERE IS OTHER INSTANCE RUNNING!", L"NewProcessWatcher", MB_ICONERROR);
-        return -1;
+        HANDLE hMutex = OpenMutexW(MUTEX_ALL_ACCESS, 0, L"NewProcessWatcherDreg");
+
+        if (!hMutex)
+        {
+            hMutex = CreateMutexW(0, 0, L"NewProcessWatcherDreg");
+        }
+        else
+        {
+            MessageBoxW(NULL, L"THERE IS OTHER INSTANCE RUNNING!", L"NewProcessWatcher", MB_ICONERROR);
+            return -1;
+        }
     }
 
     WCHAR full_path[MAX_PATH] = { 0 };
@@ -531,6 +620,14 @@ int main()
 
     wcscat_s(x86_full_path, L"x32\\CPIDS");
     wcscat_s(x64_full_path, L"x64\\CPIDS");
+
+    if (old_processes == TRUE)
+    {
+        int retf = OldProcesses(x86_full_path, x64_full_path);
+        puts("\nPRESS ENTER TO EXIT.\n");
+        getchar();
+        return retf;
+    }
 
     HANDLE x86_thread = CreateThread(
         NULL,

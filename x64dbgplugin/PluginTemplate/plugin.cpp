@@ -38,7 +38,7 @@ void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
     if (old_process)
     {
         result = IDYES;
-        params = L"-o";
+        params = L"o";
     }
     else
     {
