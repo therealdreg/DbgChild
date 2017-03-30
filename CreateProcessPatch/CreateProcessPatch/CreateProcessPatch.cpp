@@ -379,7 +379,7 @@ void FillPayload(
 
     if (dll_work_full_path == NULL)
     {
-        GetModuleFileNameW(GetModuleHandleW(NULL), current_path, sizeof(current_path));
+        GetModuleFileNameW(GetModuleHandleW(NULL), current_path, ARRAYSIZE(current_path));
         wprintf(L"Full executable work path: %s\n", current_path);
 
         tmp_ptr = current_path;
