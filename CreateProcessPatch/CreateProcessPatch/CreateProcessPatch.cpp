@@ -270,6 +270,13 @@ void CreateProcessPatch(DWORD pid)
         trampoline_ptr = (unsigned char*)trampoline;
         memcpy(trampoline_ptr, ((unsigned char*)ZwCreateUserProcess_f), total_bytes);
         trampoline_ptr += total_bytes;
+
+        printf("Checking Dangerous Instruction in trampoline...\n");
+        if (CheckDangerousInstructions(ZwCreateUserProcess_f, total_bytes))
+        {
+            fprintf(stderr, "WARNING: Dangerous Instruction should cause a crash (maybe AntiVirus hook installed before.)\n");
+        }
+
 #ifdef _WIN64
         pushret_relative_ref[2] = 0x01;
 #else 
@@ -324,6 +331,12 @@ void CreateProcessPatch(DWORD pid)
             )
         {
             fprintf(stderr, "WARNING: MAYBE ALREADY PATCHED! (PUSH + RET detected) ... REPATCHED!..\n");
+        }
+
+        printf("Checking Dangerous Instruction in old remote ZwCreateUserProcess EP...\n");
+        if (CheckDangerousInstructions(old_pushret_relative_ref_area, sizeof(pushret_relative_ref)))
+        {
+            fprintf(stderr, "WARNING: Dangerous Instruction should cause a crash (maybe AntiVirus hook installed before.)\n");
         }
 
         if (total_bytes - sizeof(pushret_relative_ref) > 0)
@@ -511,6 +524,73 @@ size_t GetBytesInstructionsReplaced(
     }
 
     return total_bytes;
+}
+
+BOOL CheckDangerousInstructions(void* address, size_t max_bytes)
+{
+    csh handle = 0;
+    cs_insn* insn;
+    size_t count;
+    cs_mode actual_cs_mode;
+    BOOL dangerous_inst_found = FALSE;
+
+#ifdef _WIN64
+    actual_cs_mode = CS_MODE_64;
+#else
+    actual_cs_mode = CS_MODE_32;
+#endif
+
+    if (cs_open(CS_ARCH_X86, actual_cs_mode, &handle) == CS_ERR_OK)
+    {
+        count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address, 0,
+            &insn);
+    
+        printf("Checking Dangerous Instructions (jmp, call, ret, rip-relative...)\nDisasm count: %d\n", (int)count);
+        if (count > 0)
+        {
+            size_t j;
+            for (j = 0; j < count; j++)
+            {
+                if (
+                    (strstr(insn[j].mnemonic, "jmp") != NULL) ||
+                    (strstr(insn[j].mnemonic, "call") != NULL) ||
+                    (strstr(insn[j].mnemonic, "ret") != NULL) ||
+                    ((insn[j].mnemonic)[0] == 'j') || // all kind of conditional jmps...
+                    (strstr(insn[j].op_str, "rip") != NULL) // all RIP relative instr...
+                   )
+                {
+                    fprintf(stderr, "WARNING: Dangerous instruction found:\n");
+                    printf("0x%" PRIXPTR " - ", (uintptr_t)address);
+                    for (int k = 0; k < insn[j].size; k++)
+                    {
+                        printf("0x%02X ", (int)((insn[j]).bytes[k]));
+                    }
+                    printf("- %s %s (%d bytes)\n", insn[j].mnemonic, insn[j].op_str, (int)(insn[j].size));
+
+                    dangerous_inst_found = TRUE;
+                }
+            }
+
+            cs_free(insn, count);
+
+        }
+        else
+        {
+            fprintf(stderr, "Error Disas Library\n");
+        }
+        cs_close(&handle);
+    }
+    else
+    {
+        fprintf(stderr, "Error Openning Disas Library\n");
+    }
+
+    if (dangerous_inst_found == FALSE)
+    {
+        printf("OK - No Dangerous Instructions found!\n");
+    }
+
+    return dangerous_inst_found;
 }
 
 

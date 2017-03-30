@@ -33,7 +33,7 @@ mkdir DbgChild_Release\release\x64
 mkdir DbgChild_Release\release\x64\plugins
 mkdir DbgChild_Release\release\x64\CPIDS
 
-copy README.md DbgChild_Release\
+copy README.md DbgChild_Release\readme_dbgchild.txt
 
 copy NewProcessWatcher\Release\NewProcessWatcher.exe DbgChild_Release\release\
 copy NewProcessWatcher\*.txt DbgChild_Release\release\

@@ -98,6 +98,7 @@ extern void* ZwCreateUserProcess_f;
 
 BOOL Is64BitProcess(HANDLE process);
 BOOL DirExistW(WCHAR* dirName);
+BOOL CheckDangerousInstructions(void* address, size_t max_bytes);
 int TestLdrLoadDllLdrGetProcedureAddress();
 void TestPayloadInMyMemory();
 void CreateProcessPatch(DWORD pid);
