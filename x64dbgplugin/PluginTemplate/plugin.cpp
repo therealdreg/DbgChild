@@ -1,5 +1,7 @@
 #include "plugin.h"
 
+static duint processEntry;
+
 enum
 {
     MENU_HOOK,
@@ -27,6 +29,11 @@ PLUG_EXPORT void CBEXCEPTION(CBTYPE cbType, PLUG_CB_EXCEPTION* info)
 
 PLUG_EXPORT void CBDEBUGEVENT(CBTYPE cbType, PLUG_CB_DEBUGEVENT* info)
 {
+}
+
+PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
+{
+    processEntry = Script::Module::EntryFromAddr(duint(info->CreateProcessInfo->lpBaseOfImage));
 }
 
 void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
@@ -104,6 +111,7 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
     wchar_t* op_type = L"runas";
 
     char* dis_cmd = NULL;
+    duint breakEntry = 0;
 
     _itow_s(DbgGetProcessId(), actual_pid, 10);
 
@@ -131,6 +139,13 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             wcscpy_s(args, actual_pid);
             wcscat_s(args, L" u");
             dis_cmd = "dis LdrInitializeThunk";
+
+            if(BridgeSettingGetUint("Events", "EntryBreakpoint", &breakEntry) && breakEntry)
+            {
+                char cmd[32] = "";
+                sprintf_s(cmd, "bp %p, ss", processEntry);
+                DbgCmdExecDirect(cmd);
+            }
             break;
 
         case MENU_NEW_PROCESS_WATCHER:
