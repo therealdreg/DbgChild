@@ -272,10 +272,7 @@ void CreateProcessPatch(DWORD pid)
         trampoline_ptr += total_bytes;
 
         printf("Checking Dangerous Instruction in trampoline...\n");
-        if (CheckDangerousInstructions(ZwCreateUserProcess_f, total_bytes))
-        {
-            fprintf(stderr, "WARNING: Dangerous Instruction should cause a crash (maybe AntiVirus hook installed before.)\n");
-        }
+        CheckDangerousInstructions(ZwCreateUserProcess_f, total_bytes);
 
 #ifdef _WIN64
         pushret_relative_ref[2] = 0x01;
@@ -334,10 +331,7 @@ void CreateProcessPatch(DWORD pid)
         }
 
         printf("Checking Dangerous Instruction in old remote ZwCreateUserProcess EP...\n");
-        if (CheckDangerousInstructions(old_pushret_relative_ref_area, sizeof(pushret_relative_ref)))
-        {
-            fprintf(stderr, "WARNING: Dangerous Instruction should cause a crash (maybe AntiVirus hook installed before.)\n");
-        }
+        CheckDangerousInstructions(old_pushret_relative_ref_area, sizeof(pushret_relative_ref));
 
         if (total_bytes - sizeof(pushret_relative_ref) > 0)
         {
@@ -545,7 +539,7 @@ BOOL CheckDangerousInstructions(void* address, size_t max_bytes)
         count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address, 0,
             &insn);
     
-        printf("Checking Dangerous Instructions (jmp, call, ret, rip-relative...)\nDisasm count: %d\n", (int)count);
+        printf("Checking Dangerous Instructions (int3, jmp, call, ret, rip-relative...)\nDisasm count: %d\n", (int)count);
         if (count > 0)
         {
             size_t j;
@@ -555,6 +549,7 @@ BOOL CheckDangerousInstructions(void* address, size_t max_bytes)
                     (strstr(insn[j].mnemonic, "jmp") != NULL) ||
                     (strstr(insn[j].mnemonic, "call") != NULL) ||
                     (strstr(insn[j].mnemonic, "ret") != NULL) ||
+                    (strstr(insn[j].mnemonic, "int") != NULL) || // debugger interrupt??
                     ((insn[j].mnemonic)[0] == 'j') || // all kind of conditional jmps...
                     (strstr(insn[j].op_str, "rip") != NULL) // all RIP relative instr...
                    )
@@ -588,6 +583,10 @@ BOOL CheckDangerousInstructions(void* address, size_t max_bytes)
     if (dangerous_inst_found == FALSE)
     {
         printf("OK - No Dangerous Instructions found!\n");
+    }
+    else
+    {
+        fprintf(stderr, "WARNING: Dangerous Instruction should cause a crash (maybe Debugger Breakpoints, AntiVirus hook installed before, etc.)\n");
     }
 
     return dangerous_inst_found;
