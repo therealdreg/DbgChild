@@ -1,4 +1,5 @@
 #include "plugin.h"
+#include "icons.h"
 
 static duint processEntry;
 
@@ -208,6 +209,36 @@ bool pluginStop()
 //Do GUI/Menu related things here.
 void pluginSetup()
 {
+	
+	// Icons
+	ICONDATA dbgchild_menu_icon;
+	ICONDATA hookprocess_menu_icon;
+	ICONDATA patchntdll_menu_icon;
+	ICONDATA unpatchntdll_menu_icon;
+	ICONDATA newprocesswatcher_menu_icon;
+	ICONDATA gotohook_menu_icon;
+	ICONDATA gotontdll_menu_icon;
+	ICONDATA helpicon_menu_icon;
+	
+	dbgchild_menu_icon.data = DbgChildIcon;
+	dbgchild_menu_icon.size = sizeof(DbgChildIcon);
+	hookprocess_menu_icon.data = HookProcessIcon;
+	hookprocess_menu_icon.size = sizeof(HookProcessIcon);
+	patchntdll_menu_icon.data = patchNTDLLIcon;
+	patchntdll_menu_icon.size = sizeof(patchNTDLLIcon);
+	unpatchntdll_menu_icon.data = unpatchNTDLLIcon;
+	unpatchntdll_menu_icon.size = sizeof(unpatchNTDLLIcon);
+	newprocesswatcher_menu_icon.data = NewProcessWatcherIcon;
+	newprocesswatcher_menu_icon.size = sizeof(NewProcessWatcherIcon);
+	gotohook_menu_icon.data = GotoHookIcon;
+	gotohook_menu_icon.size = sizeof(GotoHookIcon);	
+	gotontdll_menu_icon.data = GotoNTDLLIcon;
+	gotontdll_menu_icon.size = sizeof(GotoNTDLLIcon);	
+	helpicon_menu_icon.data = HelpIcon;
+	helpicon_menu_icon.size = sizeof(HelpIcon);
+
+
+	// Add menu item entries
     _plugin_menuaddentry(hMenu, MENU_HOOK, "&Hook process creation");
     _plugin_menuaddentry(hMenu, MENU_UNPATCH_NTDLL, "&Unpatch NTDLL entry");
     _plugin_menuaddseparator(hMenu);
@@ -227,4 +258,17 @@ void pluginSetup()
     _plugin_menuaddseparator(hMenu);
     
     _plugin_menuaddentry(hMenu, MENU_INFO, "&Plugin info by Dreg");
+
+	// Add icons to menu item entries
+	_plugin_menuseticon(hMenu, &dbgchild_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_HOOK, &hookprocess_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_UNPATCH_NTDLL, &unpatchntdll_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_PATCH_NTDLL, &patchntdll_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER, &newprocesswatcher_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_OLD, &newprocesswatcher_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_GO_TO_HOOK, &gotohook_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_GO_TO_NTDLL, &gotontdll_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_HELP, &helpicon_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_INFO, &dbgchild_menu_icon);
+	
 }
