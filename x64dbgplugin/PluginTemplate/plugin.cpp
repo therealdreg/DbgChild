@@ -121,6 +121,8 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
     switch(info->hEntry)
     {
         case MENU_HOOK:
+            DbgCmdExecDirect("bc ZwCreateUserProcess");
+
             ExecuteNewProcessLauncher(FALSE, path);
 
             wcscpy_s(exe, L"CreateProcessPatch.exe");
@@ -129,6 +131,8 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             break;
 
         case MENU_PATCH_NTDLL:
+            DbgCmdExecDirect("bc LdrInitializeThunk");
+
             wcscpy_s(exe, L"NTDLLEntryPatch.exe");
             wcscpy_s(args, actual_pid);
             wcscat_s(args, L" p");
@@ -136,6 +140,8 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             break;
 
         case MENU_UNPATCH_NTDLL:
+            DbgCmdExecDirect("bc LdrInitializeThunk");
+
             wcscpy_s(exe, L"NTDLLEntryPatch.exe");
             wcscpy_s(args, actual_pid);
             wcscat_s(args, L" u");
