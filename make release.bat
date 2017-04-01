@@ -48,5 +48,4 @@ copy CreateProcessPatch\x64\Release\CreateProcessPatch.exe DbgChild_Release\rele
 copy DbgChildHookDLL\x64\Release\DbgChildHookDLL.dll DbgChild_Release\release\x64
 copy x64dbgplugin\bin\x64\dbgchildprocess.dp64 DbgChild_Release\release\x64\plugins
 
-
 pause
