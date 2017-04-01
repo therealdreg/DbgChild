@@ -14,9 +14,9 @@ rmdir /S /Q DbgChildHookDLL\x64
 rmdir /S /Q x64dbgplugin\bin
 
 call %vcvarsall%
+devenv "NewProcessWatcher\NewProcessWatcher.sln" /rebuild "Release|x86"
 devenv "x64dbgplugin\dbgchildprocess.sln" /rebuild "Release|Win32" 
 devenv "x64dbgplugin\dbgchildprocess.sln" /rebuild "Release|x64" 
-devenv "NewProcessWatcher\NewProcessWatcher.sln" /rebuild "Release|x86"
 devenv "NTDLLEntryPatch\NTDLLEntryPatch.sln" /rebuild "Release|x86" 
 devenv "NTDLLEntryPatch\NTDLLEntryPatch.sln" /rebuild "Release|x64"
 devenv "CreateProcessPatch\CreateProcessPatch.sln" /rebuild "Release|x86"
