@@ -128,7 +128,7 @@ NTSTATUS WINAPI _ZwCreateUserProcess(
         HANDLE hFile = 0;
         OBJECT_ATTRIBUTES objAttribs = { 0 };
         UNICODE_STRING unicodeString = { 0 };
-        char file_name_path[] = { '\\', 'C', 'P', 'I', 'D', 'S', '\\',
+        char file_name_path[] = { 'C', 'P', 'I', 'D', 'S', '\\',
                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
                                 };
         wchar_t file_name_pathw[sizeof(file_name_path) * 2] = { 0 };
@@ -146,9 +146,9 @@ NTSTATUS WINAPI _ZwCreateUserProcess(
                                     sizeof(pbi),
                                     NULL);
 
-        size_str = MyItoa((DWORD)pbi.UniqueProcessId, file_name_path + 7, 10);
+        size_str = MyItoa((DWORD)pbi.UniqueProcessId, file_name_path + 6, 10);
 
-        for (int i = 0; i < size_str + 7; i++)
+        for (int i = 0; i < size_str + 6; i++)
         {
             *ptr_file_name_pathw = file_name_path[i];
             ptr_file_name_pathw += 2;
@@ -303,9 +303,7 @@ void GetCax(void)
 }
 
 
-
-
-// Code from:
+// Code from: https://github.com/Microwave89/createuserprocess/blob/master/createuserprocess/main.c
 //
 // NTSTATUS createStandardProcess(PUNICODE_STRING pProcessImageName)
 // {

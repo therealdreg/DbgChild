@@ -31,11 +31,9 @@ SOFTWARE.
 #define _CREATE_PROCESS_PATCH_H__
 
 #include <windows.h>
-#include "capstone.h"
+#include "com_patch.h"
+#include "com_common.h"
 
-#define PAGE_SIZE 4096
-#define PAGE_ROUND_DOWN(x) (((ULONG_PTR)(x)) & (~(PAGE_SIZE-1)))
-#define PAGE_ROUND_UP(x) ( (((ULONG_PTR)(x)) + PAGE_SIZE-1)  & (~(PAGE_SIZE-1)) )
 #define DISTANCE_TO_NEW_EP_ZwCreateUserProcess (0x10)
 #define API_NAME_A ("ZwCreateUserProcess")
 #define OWN_DLL_NAME_W (L"DbgChildHookDLL.dll")
@@ -83,38 +81,23 @@ typedef NTSTATUS(NTAPI* LdrGetProcedureAddress_t)(
     OUT PVOID*               FunctionAddress
     );
 
-typedef BOOL(WINAPI* LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
-
-typedef void (WINAPI* GetNativeSystemInfo_t)(
-    _Out_ LPSYSTEM_INFO lpSystemInfo
-    );
-
-extern LPFN_ISWOW64PROCESS fnIsWow64Process;
-extern GetNativeSystemInfo_t GetNativeSystemInfo_f;
 extern LdrLoadDll_t LdrLoadDll_f;
 extern LdrGetProcedureAddress_t LdrGetProcedureAddress_f;
 extern RtlDosPathNameToRelativeNtPathName_U_t RtlDosPathNameToRelativeNtPathName_U_f;
 extern void* ZwCreateUserProcess_f;
 
-BOOL Is64BitProcess(HANDLE process);
-BOOL DirExistW(WCHAR* dirName);
-BOOL CheckDangerousInstructions(void* address, size_t max_bytes);
 int TestLdrLoadDllLdrGetProcedureAddress();
+
 void TestPayloadInMyMemory();
+
 void CreateProcessPatch(DWORD pid);
+
 void FillPayload(unsigned char* remote_payload,
     void* trampoline,
     size_t trampoline_size,
     WCHAR* dll_work_full_path);
-size_t GetBytesInstructionsReplaced(void* address,
-    size_t bytes_to_replaced,
-    size_t max_bytes);
+
 BOOL MakePayloadPagesFullRights(void* payload_address, size_t size);
-BOOL PatchCode(HANDLE process,
-    void* address,
-    void* code,
-    SIZE_T code_size,
-    void* original_code);
 
 extern "C" void hello_world_asm();
 extern "C" DWORD get_payload_size();

@@ -30,6 +30,16 @@ SOFTWARE.
 #include "stdafx.h"
 #include "CreateProcessPatch.h"
 
+/*
+TODO:
+Refactorize
+check memory operations & paths bounds etc
+fix possibles buffers overflows, underruns etc.
+Documentation
+Consistent Variable Names
+....
+*/
+
 LdrLoadDll_t LdrLoadDll_f = (LdrLoadDll_t)GetProcAddress(GetModuleHandleW(
     L"ntdll.dll"),
     "LdrLoadDll");
@@ -49,24 +59,6 @@ void* ZwCreateUserProcess_f = (void*)GetProcAddress(
     GetModuleHandleW(L"ntdll.dll"),
     "ZwCreateUserProcess");
 
-LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)
-GetProcAddress(GetModuleHandleW(L"kernel32"), "IsWow64Process");
-
-
-GetNativeSystemInfo_t GetNativeSystemInfo_f = (GetNativeSystemInfo_t)GetProcAddress(
-    GetModuleHandleW(L"kernel32"), "GetNativeSystemInfo");
-
-/*
-TODO:
-Refactorize
-check memory operations & paths bounds etc
-fix possibles buffers overflows, underruns etc.
-Documentation
-Consistent Variable Names
-....
-*/
-
-
 int main(int argc, char* argv[])
 {
     printf("\n"
@@ -77,18 +69,20 @@ int main(int argc, char* argv[])
         "Copyright (c) <2017> <David Reguera Garcia aka Dreg>\n"
         "http://www.fr33project.org/\n"
         "https://github.com/David-Reguera-Garcia-Dreg\n"
-        "dreg@fr33project.org\n\n"
-        "CreateProcessPatch_"
+        "dreg@fr33project.org\n"
+        "- \n"
+        "CreateProcessPatch Version: "
     );
 
-    if (Is64BitProcess(GetCurrentProcess()))
-    {
-        puts("x64");
-    }
-    else
-    {
-        puts("x32");
-    }
+    EnableDebugPrivilege();
+
+#ifdef _WIN64
+    puts("x64");
+#else
+    puts("x86");
+#endif
+
+    puts("-\n");
 
     CreateProcessPatch(5124);
     if (argc > 1)
@@ -127,7 +121,6 @@ int TestLdrLoadDllLdrGetProcedureAddress()
     VOID* base_address = NULL;
     VOID* api_address = NULL;
 
-
     LdrLoadDll_f((PWSTR)&null_search_path, &null_load_flags, &dll_full_path,
         &base_address);
 
@@ -140,7 +133,6 @@ int TestLdrLoadDllLdrGetProcedureAddress()
 
     printf("API Address : 0x%" PRIXPTR " vs 0x%" PRIXPTR "\n", (uintptr_t)api_address,
         (uintptr_t)GetProcAddress(GetModuleHandleW(FULL_DLL_PATHW), API_NAME_A));
-
 
     return 0;
 }
@@ -162,7 +154,6 @@ void TestPayloadInMyMemory()
     ((void(*)(void))payload_relocated)();
 }
 
-
 void CreateProcessPatch(DWORD pid)
 {
     HANDLE hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ |
@@ -177,13 +168,17 @@ void CreateProcessPatch(DWORD pid)
         unsigned char* ntdll_dos_stub = (ntdll_base + sizeof(IMAGE_DOS_HEADER)) +
             DISTANCE_TO_NEW_EP_ZwCreateUserProcess;
 #ifdef _WIN64
-        unsigned char pushret_relative_ref[7] = { 0xFF, 0x35, 0x00, 0x00, 0x00, 0x00, 0xC3 };
+        unsigned char pushret_relative_ref[] = { 0xFF, 0x35, 0x00, 0x00, 0x00, 0x00, 0xC3,
+            0x90, 0x90, 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90,
+            0x90, 0x90, 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90
+        };
         DWORD* jmp_dest = (DWORD*)&pushret_relative_ref[2];
 #else
-        unsigned char pushret_relative_ref[6] = { 0x68, 0x00, 0x00, 0x00, 0x00, 0xC3 };
+        unsigned char pushret_relative_ref[] = { 0x68, 0x00, 0x00, 0x00, 0x00, 0xC3, 
+            0x90, 0x90, 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90,
+            0x90, 0x90, 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90 , 0x90
+        };
 #endif
-        unsigned char old_pushret_relative_ref_area[sizeof(pushret_relative_ref)] = { 0 };
-        unsigned char padding_inst[100] = { 0x90 };
         LPVOID payload = NULL;
         unsigned char* zwcreateuserprocess_next_valid_instruction = NULL;
         unsigned char trampoline[40] = { 0x90 };
@@ -191,12 +186,18 @@ void CreateProcessPatch(DWORD pid)
         DWORD payload_size = get_payload_size();
         void* payload_ep = get_payload_ep();
         BOOL is_64_proc = Is64BitProcess(hProcess);
+        unsigned char code_before_patch[0x40] = { 0 };
+        unsigned char code_after_patch[0x40] = { 0 };
+#ifdef _WIN64   
+        DWORD size_pushret = 7;
+#else
+        DWORD size_pushret = 6;
+#endif
 
         puts(
             "Process Openned!\n"
             "Assuming the local NTDLL its equal to remote NTDLL (for disas etc)"
         );
-
 
         printf("Remote process is: ");
         if (is_64_proc)
@@ -236,7 +237,8 @@ void CreateProcessPatch(DWORD pid)
             (uintptr_t)payload_ep,
             payload_size);
 
-        payload = VirtualAllocEx(hProcess,
+        payload = VirtualAllocEx(
+            hProcess,
             NULL,
             payload_size,
             MEM_COMMIT | MEM_RESERVE,
@@ -246,12 +248,12 @@ void CreateProcessPatch(DWORD pid)
 
         printf("Dis Base Address: 0x%" PRIXPTR " , bytes to replaced: %d , max_bytes %d\n",
             (uintptr_t)ZwCreateUserProcess_f,
-            (int)sizeof(pushret_relative_ref),
+            (int)size_pushret,
             (int)0x40);
 
         size_t total_bytes = GetBytesInstructionsReplaced(
             ((unsigned char*)ZwCreateUserProcess_f),
-            sizeof(pushret_relative_ref),
+            size_pushret,
             0x40);
 
         printf("Total instructions bytes to replace %d\n", (int)total_bytes);
@@ -280,8 +282,8 @@ void CreateProcessPatch(DWORD pid)
         memcpy(&(pushret_relative_ref[1]), &zwcreateuserprocess_next_valid_instruction,
             sizeof(zwcreateuserprocess_next_valid_instruction));
 #endif
-        memcpy(trampoline_ptr, pushret_relative_ref, sizeof(pushret_relative_ref));
-        trampoline_ptr += sizeof(pushret_relative_ref);
+        memcpy(trampoline_ptr, pushret_relative_ref, size_pushret);
+        trampoline_ptr += size_pushret;
 #ifdef _WIN64
         memcpy(trampoline_ptr, &zwcreateuserprocess_next_valid_instruction,
             sizeof(zwcreateuserprocess_next_valid_instruction));
@@ -298,20 +300,28 @@ void CreateProcessPatch(DWORD pid)
         FillPayload((unsigned char*)payload, trampoline, trampoline_ptr - trampoline,
             NULL);
 
-        PatchCode(hProcess, payload, payload_ep, payload_size, NULL);
+        PatchCode(hProcess, payload, payload_ep, payload_size, NULL, 0, NULL, 0);
         puts("Written remote payload!");
 
 #ifdef _WIN64
-        PatchCode(hProcess, ntdll_dos_stub, &payload, sizeof(payload), NULL);
+        PatchCode(hProcess, ntdll_dos_stub, &payload, sizeof(payload), NULL, 0, NULL, 0);
         puts("Written absolute address to payload in remote NTDLL DOS STUB!");
 
         *jmp_dest = (DWORD)(ntdll_dos_stub - (((unsigned char*)ZwCreateUserProcess_f) +
-            (sizeof(pushret_relative_ref) - 1)));
+            (size_pushret - 1)));
 #else
         memcpy(&(pushret_relative_ref[1]), &payload, sizeof(payload));
 #endif
-        PatchCode(hProcess, ((unsigned char*)ZwCreateUserProcess_f), pushret_relative_ref,
-            sizeof(pushret_relative_ref), old_pushret_relative_ref_area);
+        PatchCode(
+            hProcess, 
+            ((unsigned char*)ZwCreateUserProcess_f), 
+            pushret_relative_ref,
+            total_bytes,
+            code_before_patch,
+            sizeof(code_before_patch),
+            code_after_patch,
+            sizeof(code_after_patch)
+        );
 
 #ifdef _WIN64
         puts("PUSH [NTDLL DOS STUB] + RET written in remote ZwCreateUserProcess EP");
@@ -319,31 +329,12 @@ void CreateProcessPatch(DWORD pid)
         puts("PUSH + RET written in remote ZwCreateUserProcess EP");
 #endif
 
-        if (
-            (old_pushret_relative_ref_area[0] == pushret_relative_ref[0]) &&
-#ifdef _WIN64
-            (old_pushret_relative_ref_area[1] == pushret_relative_ref[1]) &&
-#endif
-            (old_pushret_relative_ref_area[sizeof(pushret_relative_ref) - 1] == pushret_relative_ref[sizeof(pushret_relative_ref) - 1])
-            )
-        {
-            fprintf(stderr, "WARNING: MAYBE ALREADY PATCHED! (PUSH + RET detected) ... REPATCHED!..\n");
-        }
-
-        printf("Checking Dangerous Instruction in old remote ZwCreateUserProcess EP...\n");
-        CheckDangerousInstructions(old_pushret_relative_ref_area, sizeof(pushret_relative_ref));
-
-        if (total_bytes - sizeof(pushret_relative_ref) > 0)
-        {
-            PatchCode(hProcess,
-                ((unsigned char*)ZwCreateUserProcess_f) + sizeof(pushret_relative_ref),
-                padding_inst,
-                total_bytes - sizeof(pushret_relative_ref),
-                NULL);
-
-            printf("Written %d NOP/s from the end of the remote hook to the next valid instruction\n",
-                (int)(total_bytes - sizeof(pushret_relative_ref)));
-        }
+        puts("Remote instructions before the patch:");
+        total_bytes = GetBytesInstructionsReplaced(code_before_patch, total_bytes, sizeof(code_before_patch));
+        CheckDangerousInstructions(code_before_patch, total_bytes);
+        
+        puts("Remote instructions after the patch:");
+        GetBytesInstructionsReplaced(code_after_patch, total_bytes, sizeof(code_after_patch));
 
         CloseHandle(hProcess);
     }
@@ -352,7 +343,6 @@ void CreateProcessPatch(DWORD pid)
         fprintf(stderr, "Error Openning Process.\n");
     }
 }
-
 
 void FillPayload(
     unsigned char* remote_payload,
@@ -375,6 +365,7 @@ void FillPayload(
     WCHAR own_dll_path[MAX_PATH] = { 0 };
     DWORD own_dll_path_size = 0;
     DWORD dwAttrib = 0;
+    WCHAR cpids_full_path[MAX_PATH] = { 0 };
 
     if (!MakePayloadPagesFullRights(payload_ep, payload_size))
     {
@@ -386,24 +377,12 @@ void FillPayload(
 
     if (dll_work_full_path == NULL)
     {
-        GetModuleFileNameW(GetModuleHandleW(NULL), current_path, ARRAYSIZE(current_path));
-        wprintf(L"Full executable work path: %s\n", current_path);
-
-        tmp_ptr = current_path;
-        tmp_ptr += wcslen(current_path);
-        while (tmp_ptr[0] != '\\')
-        {
-            tmp_ptr--;
-        }
-        tmp_ptr[0] = 0;
-
+        GetCurrentPath(current_path);
         dll_work_full_path = current_path;
     }
     wprintf(L"Own DLL dir work path: %s\n", dll_work_full_path);
 
     wcscpy_s(own_dll_path, dll_work_full_path);
-    wcscat_s(own_dll_path, L"\\");
-    WCHAR cpids_full_path[MAX_PATH] = { 0 };
     wcscpy_s(cpids_full_path, own_dll_path);
     wcscat_s(own_dll_path, OWN_DLL_NAME_W);
 
@@ -460,139 +439,6 @@ void FillPayload(
     }
 }
 
-
-size_t GetBytesInstructionsReplaced(
-    void* address,
-    size_t bytes_to_replaced,
-    size_t max_bytes)
-{
-    csh handle = 0;
-    cs_insn* insn;
-    size_t count;
-    size_t total_bytes = 0;
-    cs_mode actual_cs_mode;
-
-#ifdef _WIN64
-    actual_cs_mode = CS_MODE_64;
-#else
-    actual_cs_mode = CS_MODE_32;
-#endif
-
-    if (cs_open(CS_ARCH_X86, actual_cs_mode, &handle) == CS_ERR_OK)
-    {
-        count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address, 0,
-            &insn);
-
-        printf("Disasm count: %d\n", (int)count);
-        if (count > 0)
-        {
-            size_t j;
-            for (j = 0; j < count; j++)
-            {
-                printf("0x%" PRIXPTR " - ", (uintptr_t)address);
-
-                for (int k = 0; k < insn[j].size; k++)
-                {
-                    printf("0x%02X ", (int)((insn[j]).bytes[k]));
-                }
-                printf("- %s %s (%d bytes)\n", insn[j].mnemonic, insn[j].op_str, (int)(insn[j].size));
-                total_bytes += insn[j].size;
-                if (total_bytes >= bytes_to_replaced)
-                {
-                    break;
-                }
-            }
-
-            cs_free(insn, count);
-
-        }
-        else
-        {
-            fprintf(stderr, "Error Disas Library\n");
-        }
-        cs_close(&handle);
-    }
-    else
-    {
-        fprintf(stderr, "Error Openning Disas Library\n");
-    }
-
-    return total_bytes;
-}
-
-BOOL CheckDangerousInstructions(void* address, size_t max_bytes)
-{
-    csh handle = 0;
-    cs_insn* insn;
-    size_t count;
-    cs_mode actual_cs_mode;
-    BOOL dangerous_inst_found = FALSE;
-
-#ifdef _WIN64
-    actual_cs_mode = CS_MODE_64;
-#else
-    actual_cs_mode = CS_MODE_32;
-#endif
-
-    if (cs_open(CS_ARCH_X86, actual_cs_mode, &handle) == CS_ERR_OK)
-    {
-        count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address, 0,
-            &insn);
-    
-        printf("Checking Dangerous Instructions (int3, jmp, call, ret, rip-relative...)\nDisasm count: %d\n", (int)count);
-        if (count > 0)
-        {
-            size_t j;
-            for (j = 0; j < count; j++)
-            {
-                if (
-                    (strstr(insn[j].mnemonic, "jmp") != NULL) ||
-                    (strstr(insn[j].mnemonic, "call") != NULL) ||
-                    (strstr(insn[j].mnemonic, "ret") != NULL) ||
-                    (strstr(insn[j].mnemonic, "int") != NULL) || // debugger interrupt??
-                    ((insn[j].mnemonic)[0] == 'j') || // all kind of conditional jmps...
-                    (strstr(insn[j].op_str, "rip") != NULL) // all RIP relative instr...
-                   )
-                {
-                    fprintf(stderr, "WARNING: Dangerous instruction found:\n");
-                    printf("0x%" PRIXPTR " - ", (uintptr_t)address);
-                    for (int k = 0; k < insn[j].size; k++)
-                    {
-                        printf("0x%02X ", (int)((insn[j]).bytes[k]));
-                    }
-                    printf("- %s %s (%d bytes)\n", insn[j].mnemonic, insn[j].op_str, (int)(insn[j].size));
-
-                    dangerous_inst_found = TRUE;
-                }
-            }
-
-            cs_free(insn, count);
-
-        }
-        else
-        {
-            fprintf(stderr, "Error Disas Library\n");
-        }
-        cs_close(&handle);
-    }
-    else
-    {
-        fprintf(stderr, "Error Openning Disas Library\n");
-    }
-
-    if (dangerous_inst_found == FALSE)
-    {
-        printf("OK - No Dangerous Instructions found!\n");
-    }
-    else
-    {
-        fprintf(stderr, "WARNING: Dangerous Instruction should cause a crash (maybe Debugger Breakpoints, AntiVirus hook installed before, etc.)\n");
-    }
-
-    return dangerous_inst_found;
-}
-
-
 BOOL MakePayloadPagesFullRights(void* payload_address, size_t size)
 {
     DWORD old_protect;
@@ -606,66 +452,3 @@ BOOL MakePayloadPagesFullRights(void* payload_address, size_t size)
         &old_protect);
 }
 
-BOOL PatchCode(
-    HANDLE process,
-    void* address,
-    void* code,
-    SIZE_T code_size,
-    void* original_code)
-{
-    SIZE_T bytes_written;
-    DWORD old_protect;
-    DWORD now_protect;
-
-    VirtualProtectEx(process, (LPVOID)PAGE_ROUND_DOWN(address),
-        PAGE_SIZE,
-        PAGE_EXECUTE_READWRITE,
-        &old_protect);
-
-    if (original_code != NULL)
-    {
-        ReadProcessMemory(process, address, original_code, code_size, &bytes_written);
-    }
-
-    WriteProcessMemory(process, address, code, code_size, &bytes_written);
-
-    VirtualProtectEx(process, (LPVOID)PAGE_ROUND_DOWN(address),
-        PAGE_SIZE,
-        old_protect,
-        &now_protect);
-
-    return TRUE;
-}
-
-BOOL Is64BitProcess(HANDLE process)
-{
-    BOOL isWow64 = FALSE;
-    SYSTEM_INFO si = { 0 };
-
-    if (GetNativeSystemInfo_f == NULL || fnIsWow64Process == NULL)
-    {
-        return FALSE;
-    }
-
-    GetNativeSystemInfo_f(&si);
-    if (si.wProcessorArchitecture != PROCESSOR_ARCHITECTURE_AMD64)
-    {
-        return FALSE;
-    }
-
-    fnIsWow64Process(process, &isWow64);
-
-    return isWow64 ? FALSE : TRUE;
-}
-
-BOOL DirExistW(WCHAR* dirName) 
-{
-    DWORD attribs = GetFileAttributesW(dirName);
-
-    if (attribs == INVALID_FILE_ATTRIBUTES) 
-    {
-        return FALSE;
-    }
-    
-    return (attribs & FILE_ATTRIBUTE_DIRECTORY);
-}

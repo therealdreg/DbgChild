@@ -6,7 +6,14 @@
 #include <winternl.h>
 #include <tlhelp32.h>
 #include <tchar.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <iostream>
+#include <vector>
+#include "com_common.h"
 
+#define MAGIC_PID_W (L"4294967295")
+#define SIZE_MAGIC_PID_W (ARRAYSIZE(MAGIC_PID_W) - 1)
 
 // Based on the code of Sven B. Schreiber on:
 // http://www.informit.com/articles/article.aspx?p=22442&seqNum=5
@@ -251,5 +258,29 @@ private:
     t_NtQueryInfo mf_NtQueryInfo;
 };
 // end based code
+
+typedef struct
+{
+    wchar_t file_name[MAX_PATH];
+    wchar_t path[MAX_PATH];
+} PROCESS_CREATED_PARAMS_t;
+
+int OldProcesses(wchar_t* x86_path, wchar_t* x64_path);
+
+DWORD WINAPI NewProcessWatcher(_In_ LPVOID lpParameter);
+
+DWORD WINAPI ProcesCreated(_In_ LPVOID lpParameter);
+
+DWORD WINAPI PostProcess(_In_ LPVOID lpParameter);
+
+void ConvertCMDLine(wchar_t* cmd_line, DWORD pid);
+
+void GetCmdFromFileW(wchar_t* file, wchar_t* cmd_line, DWORD pid);
+
+void GetPreResumedCmd(WCHAR * pre_resumed_cmd, DWORD pid, bool x64);
+
+void GetPostResumedCmd(WCHAR * post_resumed_cmd, DWORD pid, bool x64);
+
+DWORD GetMainTIDFromPID(DWORD pid);
 
 #endif /* _NEW_PROCESS_WATCHER_H__ */

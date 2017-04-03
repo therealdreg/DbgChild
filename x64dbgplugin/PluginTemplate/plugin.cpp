@@ -1,5 +1,6 @@
 #include "plugin.h"
 #include "icons.h"
+#include "com_common.h"
 
 static duint processEntry;
 
@@ -72,22 +73,6 @@ void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
 
         ShellExecuteW(NULL, L"runas", watcher_path, params, NULL, SW_SHOWNORMAL);
     }
-}
-
-void GetCurrentPath(WCHAR * current_path)
-{
-    wchar_t* tmp_ptr;
-
-    ZeroMemory(current_path, sizeof(wchar_t) * MAX_PATH);
-
-    GetModuleFileNameW(GetModuleHandleW(NULL), current_path, sizeof(wchar_t) * MAX_PATH);
-    tmp_ptr = current_path;
-    tmp_ptr += wcslen(current_path);
-    while (tmp_ptr[0] != '\\')
-    {
-        tmp_ptr--;
-    }
-    tmp_ptr[1] = 0;
 }
 
 PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
