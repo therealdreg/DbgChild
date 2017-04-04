@@ -175,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\includes\com_common.h" />
+    <ClInclude Include="Icons.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="pluginmain.h" />
     <ClInclude Include="pluginsdk\bridgegraph.h" />
