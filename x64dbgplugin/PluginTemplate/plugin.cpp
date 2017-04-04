@@ -14,6 +14,7 @@ enum
     MENU_AUTO_UNPATCH_NTDLL,
     MENU_NEW_PROCESS_WATCHER,
     MENU_NEW_PROCESS_WATCHER_OLD,
+    MENU_NEW_PROCESS_WATCHER_NO_ASK,
     MENU_GO_TO_HOOK,
     MENU_GO_TO_NTDLL,
     MENU_HELP,
@@ -52,8 +53,21 @@ void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
         hMutex = OpenMutexW(MUTEX_ALL_ACCESS, 0, L"NewProcessWatcherDreg");
         if (!hMutex)
         {
+            char rd_value[MAX_PATH] = { 0 };
             ReleaseMutex(hMutex);
-            result = MessageBoxA(NULL, "NewProcessWatcher is not running, do you want launch it?", PLUGIN_NAME, MB_YESNO | MB_ICONQUESTION | MB_TOPMOST);
+
+            result = 0;
+            if (BridgeSettingGet("dbgchild", "watcher_no_ask", rd_value))
+            {
+                if (strcmp(rd_value, "true") == 0)
+                {
+                    result = IDYES;
+                }
+            }
+            if (result == 0)
+            {
+                result = MessageBoxA(NULL, "NewProcessWatcher is not running, do you want launch it?", PLUGIN_NAME, MB_YESNO | MB_ICONQUESTION | MB_TOPMOST);
+            }
         }
         else
         {
@@ -175,7 +189,8 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         info->hEntry != MENU_NEW_PROCESS_WATCHER_OLD &&
         info->hEntry != MENU_CLEAR &&
         info->hEntry != MENU_AUTO_UNPATCH_NTDLL &&
-        info->hEntry != MENU_AUTO_HOOK
+        info->hEntry != MENU_AUTO_HOOK &&
+        info->hEntry != MENU_NEW_PROCESS_WATCHER_NO_ASK
         )
     {
         if (!DbgIsDebugging())
@@ -208,6 +223,36 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             wcscpy_s(exe, L"CreateProcessPatch.exe");
             wcscpy_s(args, actual_pid);
             dis_cmd = "dis ZwCreateUserProcess";
+            break;
+
+        case MENU_NEW_PROCESS_WATCHER_NO_ASK:
+        {
+            char rd_value[MAX_PATH] = { 0 };
+
+            if (BridgeSettingGet("dbgchild", "watcher_no_ask", rd_value))
+            {
+                bool auto_enable = true;
+                if (strcmp(rd_value, "true") == 0)
+                {
+                    auto_enable = true;
+                }
+                else
+                {
+                    auto_enable = false;
+                }
+                if (auto_enable)
+                {
+                    BridgeSettingSet("dbgchild", "watcher_no_ask", "false");
+                }
+                else
+                {
+                    BridgeSettingSet("dbgchild", "watcher_no_ask", "true");
+                }
+                _plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable ? false : true);
+
+                BridgeSettingFlush();
+            }
+        }
             break;
 
         case MENU_AUTO_UNPATCH_NTDLL:
@@ -426,6 +471,7 @@ void pluginSetup()
 
     _plugin_menuaddentry(hMenu, MENU_NEW_PROCESS_WATCHER, "&Launch NewProcessWatcher");
     _plugin_menuaddentry(hMenu, MENU_NEW_PROCESS_WATCHER_OLD, "&Launch NewProcessWatcher with old processes");
+    _plugin_menuaddentry(hMenu, MENU_NEW_PROCESS_WATCHER_NO_ASK, "&Launch NewProcessWatcher without ask");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_GO_TO_HOOK, "&Go to Hook process creation");
@@ -494,5 +540,27 @@ void pluginSetup()
     }
 
     _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable);
+
+
+    ZeroMemory(rd_value, sizeof(rd_value));
+    auto_enable = false;
+    if (BridgeSettingGet("dbgchild", "watcher_no_ask", rd_value) == false)
+    {
+        BridgeSettingSet("dbgchild", "watcher_no_ask", "false");
+        BridgeSettingFlush();
+    }
+    if (BridgeSettingGet("dbgchild", "watcher_no_ask", rd_value))
+    {
+        if (strcmp(rd_value, "true") == 0)
+        {
+            auto_enable = true;
+        }
+        else
+        {
+            auto_enable = false;
+        }
+    }
+
+    _plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable);
 	
 }
