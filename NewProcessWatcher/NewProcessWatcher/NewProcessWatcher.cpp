@@ -29,8 +29,43 @@ SOFTWARE.
 #include "NewProcessWatcher.h"
 
 #ifdef _WIN64
-#error "This program cant works fine compiled in x64 mode. use only x32 version"
+#error "This program does not support being compiled in x64 mode. Compile for the x32 version only."
 #endif
+
+
+// Definition for undocumented function in kernel32:SetConsoleIcon
+typedef void (WINAPI *pSetConsoleIcon)(HICON);
+pSetConsoleIcon ProcSetConsoleIcon = NULL;
+
+// Constants for resources used for eye blink
+CONST INT ICO_EYEOPEN = 102;
+CONST INT ICO_EYEHALF = 103;
+CONST INT ICO_EYECLOSED = 104;
+
+// Handles for icons for eye blink
+HICON hIcoEyeOpen;
+HICON hIcoEyeHalf;
+HICON hIcoEyeClosed;
+
+// Used to blink the eye icon
+VOID CALLBACK NewProcessWatcherTimerProc(PVOID lpParam, BOOLEAN TimerOrWaitFired)
+{
+
+	DWORD dwBlinkDuration = 100;
+	ProcSetConsoleIcon(hIcoEyeOpen);
+	SleepEx(dwBlinkDuration, FALSE);
+	ProcSetConsoleIcon(hIcoEyeHalf);
+	SleepEx(dwBlinkDuration, FALSE);
+	ProcSetConsoleIcon(hIcoEyeClosed);
+	SleepEx(dwBlinkDuration, FALSE);
+	ProcSetConsoleIcon(hIcoEyeClosed);
+	SleepEx(dwBlinkDuration, FALSE);
+	ProcSetConsoleIcon(hIcoEyeHalf);
+	SleepEx(dwBlinkDuration, FALSE);
+	ProcSetConsoleIcon(hIcoEyeOpen);
+	return;
+}
+
 
 /*
 TODO:
@@ -45,6 +80,38 @@ Consistent Variable Names
 
 int main(int argc, char** argv)
 {
+
+	HMODULE hModKernel32;
+	HINSTANCE hMod;
+	HANDLE hTimer = NULL;
+	HANDLE hQueue = NULL;
+	BOOL bSuccess;
+
+	// Get SetConsoleIcon procedure
+	hModKernel32 = GetModuleHandle(TEXT("Kernel32.dll"));
+	ProcSetConsoleIcon = (pSetConsoleIcon)GetProcAddress(hModKernel32, "SetConsoleIcon");
+
+	// If SetConsoleIcon is available we use it
+	if (ProcSetConsoleIcon != NULL)
+	{
+
+		// Get module handle and load icons for blinking eye
+		hMod = GetModuleHandle(NULL);
+		hIcoEyeOpen = LoadIcon(hMod, MAKEINTRESOURCE(ICO_EYEOPEN));
+		hIcoEyeHalf = LoadIcon(hMod, MAKEINTRESOURCE(ICO_EYEHALF));
+		hIcoEyeClosed = LoadIcon(hMod, MAKEINTRESOURCE(ICO_EYECLOSED));
+
+		// Set initial icon
+		ProcSetConsoleIcon(hIcoEyeOpen);
+
+		hQueue = CreateTimerQueue();
+		if (hQueue != NULL)
+		{
+			// Create timer to fire every 5 seconds for eye to blink
+			bSuccess = CreateTimerQueueTimer(&hTimer, hQueue, (WAITORTIMERCALLBACK) NewProcessWatcherTimerProc, 0, 5000, 5000, 0);
+		}
+	}
+
     puts("\n"
         "DbgChild - New Process Watcher\n"
         "-\n"

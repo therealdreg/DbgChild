@@ -33,6 +33,9 @@
     <ClInclude Include="..\..\common\includes\com_common.h">
       <Filter>Header Files\common</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -49,5 +52,16 @@
     <ResourceCompile Include="NewProcessWatcher.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="eye_half.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="NewProcessWatcher.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="eye_close.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
