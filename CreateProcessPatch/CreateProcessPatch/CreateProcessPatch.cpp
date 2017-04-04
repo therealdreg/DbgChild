@@ -84,7 +84,6 @@ int main(int argc, char* argv[])
 
     puts("-\n");
 
-    CreateProcessPatch(5124);
     if (argc > 1)
     {
         DWORD pid = atoi(argv[1]);
@@ -253,6 +252,7 @@ void CreateProcessPatch(DWORD pid)
 
         size_t total_bytes = GetBytesInstructionsReplaced(
             ((unsigned char*)ZwCreateUserProcess_f),
+            ((unsigned char*)ZwCreateUserProcess_f),
             size_pushret,
             0x40);
 
@@ -266,6 +266,7 @@ void CreateProcessPatch(DWORD pid)
         printf("Next valid instruction after the hook: 0x%" PRIXPTR "\n", (uintptr_t)zwcreateuserprocess_next_valid_instruction);
         GetBytesInstructionsReplaced(
             zwcreateuserprocess_next_valid_instruction,
+            zwcreateuserprocess_next_valid_instruction,
             0x10,
             0x10);
 
@@ -274,7 +275,7 @@ void CreateProcessPatch(DWORD pid)
         trampoline_ptr += total_bytes;
 
         printf("Checking Dangerous Instruction in trampoline...\n");
-        CheckDangerousInstructions(ZwCreateUserProcess_f, total_bytes);
+        CheckDangerousInstructions(ZwCreateUserProcess_f, ZwCreateUserProcess_f, total_bytes);
 
 #ifdef _WIN64
         pushret_relative_ref[2] = 0x01;
@@ -292,6 +293,7 @@ void CreateProcessPatch(DWORD pid)
 
         puts("Trampoline created:");
         GetBytesInstructionsReplaced(
+            trampoline,
             trampoline,
             sizeof(trampoline),
             sizeof(trampoline)
@@ -330,11 +332,11 @@ void CreateProcessPatch(DWORD pid)
 #endif
 
         puts("Remote instructions before the patch:");
-        total_bytes = GetBytesInstructionsReplaced(code_before_patch, total_bytes, sizeof(code_before_patch));
-        CheckDangerousInstructions(code_before_patch, total_bytes);
+        total_bytes = GetBytesInstructionsReplaced(code_before_patch, ZwCreateUserProcess_f, total_bytes, sizeof(code_before_patch));
+        CheckDangerousInstructions(code_before_patch, ZwCreateUserProcess_f, total_bytes);
         
         puts("Remote instructions after the patch:");
-        GetBytesInstructionsReplaced(code_after_patch, total_bytes, sizeof(code_after_patch));
+        GetBytesInstructionsReplaced(code_after_patch, ZwCreateUserProcess_f, total_bytes, sizeof(code_after_patch));
 
         CloseHandle(hProcess);
     }

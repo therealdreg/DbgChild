@@ -190,17 +190,17 @@ bool PatchUnpatchNTDLL(DWORD pid, bool patch)
         );
 
         puts("Remote instructions before the patch:");
-        total_bytes = GetBytesInstructionsReplaced(code_before_patch, sizeof(jmp_itfself), sizeof(code_before_patch));
+        total_bytes = GetBytesInstructionsReplaced(code_before_patch, ntdll_ep, sizeof(jmp_itfself), sizeof(code_before_patch));
         if (patch)
         {
-            CheckDangerousInstructions(code_before_patch, total_bytes);
+            CheckDangerousInstructions(code_before_patch, ntdll_ep, total_bytes);
         }
 
         puts("Remote instructions after the patch:");
-        total_bytes = GetBytesInstructionsReplaced(code_after_patch, sizeof(jmp_itfself), sizeof(code_after_patch));
+        total_bytes = GetBytesInstructionsReplaced(code_after_patch, ntdll_ep, sizeof(jmp_itfself), sizeof(code_after_patch));
         if (!patch)
         {
-            CheckDangerousInstructions(code_after_patch, total_bytes);
+            CheckDangerousInstructions(code_after_patch, ntdll_ep, total_bytes);
         }
 
         CloseHandle(hProcess);

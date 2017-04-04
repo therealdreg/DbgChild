@@ -34,9 +34,10 @@ SOFTWARE.
 #include "capstone.h"
 #include "com_common.h"
 
-BOOL CheckDangerousInstructions(void* address, size_t max_bytes);
+BOOL CheckDangerousInstructions(void* address, void* address_to_show, size_t max_bytes);
 
-size_t GetBytesInstructionsReplaced(void* address,
+size_t GetBytesInstructionsReplaced(void* address, 
+    void* address_to_show,
     size_t bytes_to_replaced,
     size_t max_bytes);
 

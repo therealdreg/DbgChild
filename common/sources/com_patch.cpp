@@ -42,6 +42,7 @@ Consistent Variable Names
 
 size_t GetBytesInstructionsReplaced(
     void* address,
+    void* address_to_show,
     size_t bytes_to_replaced,
     size_t max_bytes)
 {
@@ -59,7 +60,7 @@ size_t GetBytesInstructionsReplaced(
 
     if (cs_open(CS_ARCH_X86, actual_cs_mode, &handle) == CS_ERR_OK)
     {
-        count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address, 0,
+        count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address_to_show, 0,
             &insn);
 
         printf("Disasm count: %d\n", (int)count);
@@ -68,7 +69,7 @@ size_t GetBytesInstructionsReplaced(
             size_t j;
             for (j = 0; j < count; j++)
             {
-                printf("0x%" PRIXPTR " - ", (uintptr_t)address);
+                printf("0x%" PRIXPTR " - ", (uintptr_t)insn[j].address);
 
                 for (int k = 0; k < insn[j].size; k++)
                 {
@@ -99,7 +100,7 @@ size_t GetBytesInstructionsReplaced(
     return total_bytes;
 }
 
-BOOL CheckDangerousInstructions(void* address, size_t max_bytes)
+BOOL CheckDangerousInstructions(void* address, void* address_to_show, size_t max_bytes)
 {
     csh handle = 0;
     cs_insn* insn;
@@ -115,7 +116,7 @@ BOOL CheckDangerousInstructions(void* address, size_t max_bytes)
 
     if (cs_open(CS_ARCH_X86, actual_cs_mode, &handle) == CS_ERR_OK)
     {
-        count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address, 0,
+        count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address_to_show, 0,
             &insn);
 
         printf("Checking Dangerous Instructions (int3, jmp, call, ret, rip-relative...)\nDisasm count: %d\n", (int)count);
@@ -134,7 +135,7 @@ BOOL CheckDangerousInstructions(void* address, size_t max_bytes)
                     )
                 {
                     fprintf(stderr, "WARNING: Dangerous instruction found:\n");
-                    printf("0x%" PRIXPTR " - ", (uintptr_t)address);
+                    printf("0x%" PRIXPTR " - ", (uintptr_t)insn[j].address);
                     for (int k = 0; k < insn[j].size; k++)
                     {
                         printf("0x%02X ", (int)((insn[j]).bytes[k]));
