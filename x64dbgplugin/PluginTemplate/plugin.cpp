@@ -2,12 +2,22 @@
 #include "icons.h"
 #include "com_common.h"
 
+#ifdef _WIN64
+#define POST_TXT L"x64_post.unicode.txt"
+#define PRE_TXT L"x64_pre.unicode.txt"
+#else
+#define POST_TXT L"x86_post.unicode.txt"
+#define PRE_TXT L"x86_pre.unicode.txt"
+#endif
+
 static duint processEntry;
 
 enum
 {
     MENU_HOOK,
     MENU_AUTO_HOOK,
+    MENU_EDIT_PRE,
+    MENU_EDIT_POST,
     MENU_CLEAR,
     MENU_PATCH_NTDLL,
     MENU_UNPATCH_NTDLL,
@@ -190,7 +200,9 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         info->hEntry != MENU_CLEAR &&
         info->hEntry != MENU_AUTO_UNPATCH_NTDLL &&
         info->hEntry != MENU_AUTO_HOOK &&
-        info->hEntry != MENU_NEW_PROCESS_WATCHER_NO_ASK
+        info->hEntry != MENU_NEW_PROCESS_WATCHER_NO_ASK &&
+        info->hEntry != MENU_EDIT_PRE &&
+        info->hEntry != MENU_EDIT_POST
         )
     {
         if (!DbgIsDebugging())
@@ -223,6 +235,20 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             wcscpy_s(exe, L"CreateProcessPatch.exe");
             wcscpy_s(args, actual_pid);
             dis_cmd = "dis ZwCreateUserProcess";
+            break;
+
+        case MENU_EDIT_PRE:
+            op_type = L"edit";
+            wcscpy_s(exe, path);
+            ZeroMemory(&(exe[wcslen(exe) - 4]), 2);
+            wcscat_s(exe, PRE_TXT);
+            break;
+
+        case MENU_EDIT_POST:
+            op_type = L"edit";
+            wcscpy_s(exe, path);
+            ZeroMemory(&(exe[wcslen(exe) - 4]), 2);
+            wcscat_s(exe, POST_TXT);
             break;
 
         case MENU_NEW_PROCESS_WATCHER_NO_ASK:
@@ -397,7 +423,9 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
     if (info->hEntry == MENU_HOOK ||
         info->hEntry == MENU_PATCH_NTDLL ||
         info->hEntry == MENU_UNPATCH_NTDLL ||
-        info->hEntry == MENU_HELP
+        info->hEntry == MENU_HELP ||
+        info->hEntry == MENU_EDIT_PRE ||
+        info->hEntry == MENU_EDIT_POST
         )
     {
         ShellExecuteW(NULL, op_type, exe, args, path, SW_SHOWNORMAL);
@@ -476,6 +504,10 @@ void pluginSetup()
 
     _plugin_menuaddentry(hMenu, MENU_GO_TO_HOOK, "&Go to Hook process creation");
     _plugin_menuaddentry(hMenu, MENU_GO_TO_NTDLL, "&Go to NTDLL patch");
+    _plugin_menuaddseparator(hMenu);
+
+    _plugin_menuaddentry(hMenu, MENU_EDIT_PRE, "&Edit suspend command");
+    _plugin_menuaddentry(hMenu, MENU_EDIT_POST, "&Edit resumed command");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_HELP, "&Help");
