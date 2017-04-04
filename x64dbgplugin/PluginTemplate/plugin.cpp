@@ -7,6 +7,7 @@ static duint processEntry;
 enum
 {
     MENU_HOOK,
+    MENU_AUTO_HOOK,
     MENU_CLEAR,
     MENU_PATCH_NTDLL,
     MENU_UNPATCH_NTDLL,
@@ -34,6 +35,44 @@ PLUG_EXPORT void CBEXCEPTION(CBTYPE cbType, PLUG_CB_EXCEPTION* info)
 PLUG_EXPORT void CBDEBUGEVENT(CBTYPE cbType, PLUG_CB_DEBUGEVENT* info)
 {
 }
+
+void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
+{
+    int result = IDCANCEL;
+    WCHAR * params = NULL;
+    HANDLE hMutex;
+
+    if (old_process)
+    {
+        result = IDYES;
+        params = L"o";
+    }
+    else
+    {
+        hMutex = OpenMutexW(MUTEX_ALL_ACCESS, 0, L"NewProcessWatcherDreg");
+        if (!hMutex)
+        {
+            ReleaseMutex(hMutex);
+            result = MessageBoxA(NULL, "NewProcessWatcher is not running, do you want launch it?", PLUGIN_NAME, MB_YESNO | MB_ICONQUESTION | MB_TOPMOST);
+        }
+        else
+        {
+            _plugin_logprintf("[" PLUGIN_NAME "] NewProcessWatcher already Open");
+        }
+    }
+
+    if (result == IDYES)
+    {
+        WCHAR watcher_path[MAX_PATH] = { 0 };
+
+        wcscpy_s(watcher_path, path);
+        ZeroMemory(&(watcher_path[wcslen(watcher_path) - 4]), 2);
+        wcscat_s(watcher_path, L"NewProcessWatcher.exe");
+
+        ShellExecuteW(NULL, L"runas", watcher_path, params, NULL, SW_SHOWNORMAL);
+    }
+}
+
 
 PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
 {
@@ -91,44 +130,42 @@ PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
             ShellExecuteW(NULL, L"runas", exe, args, cur_path, SW_SHOWNORMAL);
         }
     }
-}
 
-void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
-{
-    int result = IDCANCEL;
-    WCHAR * params = NULL;
-    HANDLE hMutex;
-
-    if (old_process)
+    if (BridgeSettingGet("dbgchild", "auto_hook", rd_value))
     {
-        result = IDYES;
-        params = L"o";
-    }
-    else
-    {
-        hMutex = OpenMutexW(MUTEX_ALL_ACCESS, 0, L"NewProcessWatcherDreg");
-        if (!hMutex)
+        if (strcmp(rd_value, "true") == 0)
         {
-            ReleaseMutex(hMutex);
-            result = MessageBoxA(NULL, "NewProcessWatcher is not running, do you want launch it?", PLUGIN_NAME, MB_YESNO | MB_ICONQUESTION | MB_TOPMOST);
+            auto_enable = true;
         }
         else
         {
-            _plugin_logprintf("[" PLUGIN_NAME "] NewProcessWatcher already Open");
+            auto_enable = false;
+        }
+
+        if (auto_enable)
+        {
+            WCHAR exe[MAX_PATH] = { 0 };
+            WCHAR path[MAX_PATH] = { 0 };
+            WCHAR args[MAX_PATH] = { 0 };
+            wchar_t actual_pid[ARRAYSIZE(L"4294967295")] = { 0 };
+
+            _itow_s(DbgGetProcessId(), actual_pid, 10);
+
+            GetCurrentPath(path);
+
+            DbgCmdExecDirect("bc ZwCreateUserProcess");
+
+            ExecuteNewProcessLauncher(FALSE, path);
+
+            wcscpy_s(exe, L"CreateProcessPatch.exe");
+
+            wcscpy_s(args, actual_pid);
+
+            ShellExecuteW(NULL, L"runas", exe, args, path, SW_SHOWNORMAL);
         }
     }
-
-    if (result == IDYES)
-    {
-        WCHAR watcher_path[MAX_PATH] = { 0 };
-
-        wcscpy_s(watcher_path, path);
-        ZeroMemory(&(watcher_path[wcslen(watcher_path) - 4]), 2);
-        wcscat_s(watcher_path, L"NewProcessWatcher.exe");
-
-        ShellExecuteW(NULL, L"runas", watcher_path, params, NULL, SW_SHOWNORMAL);
-    }
 }
+
 
 PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
 {
@@ -137,7 +174,8 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         info->hEntry != MENU_NEW_PROCESS_WATCHER &&
         info->hEntry != MENU_NEW_PROCESS_WATCHER_OLD &&
         info->hEntry != MENU_CLEAR &&
-        info->hEntry != MENU_AUTO_UNPATCH_NTDLL
+        info->hEntry != MENU_AUTO_UNPATCH_NTDLL &&
+        info->hEntry != MENU_AUTO_HOOK
         )
     {
         if (!DbgIsDebugging())
@@ -201,6 +239,36 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             }
         }
             break;
+
+        case MENU_AUTO_HOOK:
+        {
+            char rd_value[MAX_PATH] = { 0 };
+
+            if (BridgeSettingGet("dbgchild", "auto_hook", rd_value))
+            {
+                bool auto_enable = false;
+                if (strcmp(rd_value, "true") == 0)
+                {
+                    auto_enable = true;
+                }
+                else
+                {
+                    auto_enable = false;
+                }
+                if (auto_enable)
+                {
+                    BridgeSettingSet("dbgchild", "auto_hook", "false");
+                }
+                else
+                {
+                    BridgeSettingSet("dbgchild", "auto_hook", "true");
+                }
+                _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable ? false : true);
+
+                BridgeSettingFlush();
+            }
+        }
+        break;
 
         case MENU_CLEAR:
         {
@@ -347,6 +415,7 @@ void pluginSetup()
 
 	// Add menu item entries
     _plugin_menuaddentry(hMenu, MENU_HOOK, "&Hook process creation");
+    _plugin_menuaddentry(hMenu, MENU_AUTO_HOOK, "&Auto Hook process creation");
     _plugin_menuaddseparator(hMenu);
     _plugin_menuaddentry(hMenu, MENU_CLEAR, "&Clear CPIDS");
     _plugin_menuaddseparator(hMenu);
@@ -382,9 +451,10 @@ void pluginSetup()
 	_plugin_menuentryseticon(pluginHandle, MENU_INFO, &dbgchild_menu_icon);
 
 
-    char rd_value[MAX_PATH] = { 0 };
+    char rd_value[MAX_PATH];
     bool auto_enable = true;
 
+    ZeroMemory(rd_value, sizeof(rd_value));
     if (BridgeSettingGet("dbgchild", "auto_unpatch_ntdll", rd_value) == false)
     {
         BridgeSettingSet("dbgchild", "auto_unpatch_ntdll", "true");
@@ -404,5 +474,25 @@ void pluginSetup()
 
     _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable);
 
+    ZeroMemory(rd_value, sizeof(rd_value));
+    auto_enable = false;
+    if (BridgeSettingGet("dbgchild", "auto_hook", rd_value) == false)
+    {
+        BridgeSettingSet("dbgchild", "auto_hook", "false");
+        BridgeSettingFlush();
+    }
+    if (BridgeSettingGet("dbgchild", "auto_hook", rd_value))
+    {
+        if (strcmp(rd_value, "true") == 0)
+        {
+            auto_enable = true;
+        }
+        else
+        {
+            auto_enable = false;
+        }
+    }
+
+    _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable);
 	
 }
