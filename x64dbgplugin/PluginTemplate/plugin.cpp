@@ -323,6 +323,7 @@ void pluginSetup()
 	ICONDATA gotohook_menu_icon;
 	ICONDATA gotontdll_menu_icon;
 	ICONDATA helpicon_menu_icon;
+	ICONDATA clearcpids_menu_icon;
 	
 	dbgchild_menu_icon.data = DbgChildIcon;
 	dbgchild_menu_icon.size = sizeof(DbgChildIcon);
@@ -340,6 +341,8 @@ void pluginSetup()
 	gotontdll_menu_icon.size = sizeof(GotoNTDLLIcon);	
 	helpicon_menu_icon.data = HelpIcon;
 	helpicon_menu_icon.size = sizeof(HelpIcon);
+	clearcpids_menu_icon.data = ClearCPIDSIcon;
+	clearcpids_menu_icon.size = sizeof(ClearCPIDSIcon);
 
 
 	// Add menu item entries
@@ -368,6 +371,7 @@ void pluginSetup()
 	// Add icons to menu item entries
 	_plugin_menuseticon(hMenu, &dbgchild_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_HOOK, &hookprocess_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_CLEAR, &clearcpids_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_UNPATCH_NTDLL, &unpatchntdll_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_PATCH_NTDLL, &patchntdll_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER, &newprocesswatcher_menu_icon);
