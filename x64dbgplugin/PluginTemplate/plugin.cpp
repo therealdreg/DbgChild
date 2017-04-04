@@ -19,6 +19,7 @@ enum
     MENU_EDIT_PRE,
     MENU_EDIT_POST,
     MENU_CLEAR,
+    MENU_OPENCPIDS,
     MENU_PATCH_NTDLL,
     MENU_UNPATCH_NTDLL,
     MENU_AUTO_UNPATCH_NTDLL,
@@ -202,7 +203,8 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         info->hEntry != MENU_AUTO_HOOK &&
         info->hEntry != MENU_NEW_PROCESS_WATCHER_NO_ASK &&
         info->hEntry != MENU_EDIT_PRE &&
-        info->hEntry != MENU_EDIT_POST
+        info->hEntry != MENU_EDIT_POST &&
+        info->hEntry != MENU_OPENCPIDS
         )
     {
         if (!DbgIsDebugging())
@@ -249,6 +251,12 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             wcscpy_s(exe, path);
             ZeroMemory(&(exe[wcslen(exe) - 4]), 2);
             wcscat_s(exe, POST_TXT);
+            break;
+
+        case MENU_OPENCPIDS:
+            op_type = L"explore";
+            wcscpy_s(exe, path);
+            wcscat_s(exe, L"CPIDS");
             break;
 
         case MENU_NEW_PROCESS_WATCHER_NO_ASK:
@@ -425,7 +433,8 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         info->hEntry == MENU_UNPATCH_NTDLL ||
         info->hEntry == MENU_HELP ||
         info->hEntry == MENU_EDIT_PRE ||
-        info->hEntry == MENU_EDIT_POST
+        info->hEntry == MENU_EDIT_POST ||
+        info->hEntry == MENU_OPENCPIDS
         )
     {
         ShellExecuteW(NULL, op_type, exe, args, path, SW_SHOWNORMAL);
@@ -490,8 +499,11 @@ void pluginSetup()
     _plugin_menuaddentry(hMenu, MENU_HOOK, "&Hook process creation");
     _plugin_menuaddentry(hMenu, MENU_AUTO_HOOK, "&Auto Hook process creation");
     _plugin_menuaddseparator(hMenu);
+
     _plugin_menuaddentry(hMenu, MENU_CLEAR, "&Clear CPIDS");
+    _plugin_menuaddentry(hMenu, MENU_OPENCPIDS, "&Open CPIDS");
     _plugin_menuaddseparator(hMenu);
+
     _plugin_menuaddentry(hMenu, MENU_UNPATCH_NTDLL, "&Unpatch NTDLL entry");
     _plugin_menuaddentry(hMenu, MENU_PATCH_NTDLL, "&Patch NTDLL entry");
     _plugin_menuaddentry(hMenu, MENU_AUTO_UNPATCH_NTDLL, "&Auto Unpatch NTDLL entry");
@@ -506,7 +518,7 @@ void pluginSetup()
     _plugin_menuaddentry(hMenu, MENU_GO_TO_NTDLL, "&Go to NTDLL patch");
     _plugin_menuaddseparator(hMenu);
 
-    _plugin_menuaddentry(hMenu, MENU_EDIT_PRE, "&Edit suspend command");
+    _plugin_menuaddentry(hMenu, MENU_EDIT_PRE, "&Edit suspended command");
     _plugin_menuaddentry(hMenu, MENU_EDIT_POST, "&Edit resumed command");
     _plugin_menuaddseparator(hMenu);
 
