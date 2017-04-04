@@ -46,6 +46,17 @@ GetProcAddress(GetModuleHandleW(L"kernel32"), "IsWow64Process");
 GetNativeSystemInfo_t GetNativeSystemInfo_f = (GetNativeSystemInfo_t)GetProcAddress(
     GetModuleHandleW(L"kernel32"), "GetNativeSystemInfo");
 
+BOOL FileExistW(WCHAR* filename)
+{
+    DWORD dwAttrib = GetFileAttributesW(filename);
+    if ((dwAttrib != INVALID_FILE_ATTRIBUTES &&
+        !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)))
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
 
 BOOL DirExistW(WCHAR* dirName)
 {

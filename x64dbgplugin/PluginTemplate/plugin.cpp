@@ -7,8 +7,10 @@ static duint processEntry;
 enum
 {
     MENU_HOOK,
+    MENU_CLEAR,
     MENU_PATCH_NTDLL,
     MENU_UNPATCH_NTDLL,
+    MENU_AUTO_UNPATCH_NTDLL,
     MENU_NEW_PROCESS_WATCHER,
     MENU_NEW_PROCESS_WATCHER_OLD,
     MENU_GO_TO_HOOK,
@@ -35,7 +37,60 @@ PLUG_EXPORT void CBDEBUGEVENT(CBTYPE cbType, PLUG_CB_DEBUGEVENT* info)
 
 PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
 {
+    char rd_value[MAX_PATH] = { 0 };
+    bool auto_enable = true;
+
+    if (BridgeSettingGet("dbgchild", "auto_unpatch_ntdll", rd_value))
+    {
+        if (strcmp(rd_value, "true") == 0)
+        {
+            auto_enable = true;
+        }
+        else
+        {
+            auto_enable = false;
+        }
+    }
+
     processEntry = Script::Module::EntryFromAddr(duint(info->CreateProcessInfo->lpBaseOfImage));
+
+    if (auto_enable)
+    {
+        WCHAR cpids_x32_path[MAX_PATH] = { 0 };
+        WCHAR cpids_x64_path[MAX_PATH] = { 0 };
+        WCHAR cur_path[MAX_PATH] = { 0 };
+        WCHAR exe[MAX_PATH] = { 0 };
+        WCHAR args[MAX_PATH] = { 0 };
+        wchar_t actual_pid[ARRAYSIZE(L"4294967295")] = { 0 };
+
+        DbgCmdExecDirect("bc LdrInitializeThunk");
+        DbgCmdExecDirect("dis LdrInitializeThunk");
+
+        _itow_s(DbgGetProcessId(), actual_pid, 10);
+
+        GetCurrentPath(cpids_x32_path);
+
+        wcscpy_s(exe, cpids_x32_path);
+        wcscpy_s(cur_path, cpids_x32_path);
+        wcscpy_s(exe, L"NTDLLEntryPatch.exe");
+        wcscpy_s(args, actual_pid);
+        wcscat_s(args, L" u");
+
+        ZeroMemory(&(cpids_x32_path[wcslen(cpids_x32_path) - 4]), 2);
+
+        wcscpy_s(cpids_x64_path, cpids_x32_path);
+
+        wcscat_s(cpids_x32_path, L"x32\\CPIDS\\");
+        wcscat_s(cpids_x32_path, actual_pid);
+
+        wcscat_s(cpids_x64_path, L"x64\\CPIDS\\");
+        wcscat_s(cpids_x64_path, actual_pid);
+
+        if (FileExistW(cpids_x32_path) || FileExistW(cpids_x64_path))
+        {
+            ShellExecuteW(NULL, L"runas", exe, args, cur_path, SW_SHOWNORMAL);
+        }
+    }
 }
 
 void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
@@ -80,7 +135,9 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
     if (info->hEntry != MENU_INFO && 
         info->hEntry != MENU_HELP &&
         info->hEntry != MENU_NEW_PROCESS_WATCHER &&
-        info->hEntry != MENU_NEW_PROCESS_WATCHER_OLD
+        info->hEntry != MENU_NEW_PROCESS_WATCHER_OLD &&
+        info->hEntry != MENU_CLEAR &&
+        info->hEntry != MENU_AUTO_UNPATCH_NTDLL
         )
     {
         if (!DbgIsDebugging())
@@ -113,6 +170,62 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             wcscpy_s(exe, L"CreateProcessPatch.exe");
             wcscpy_s(args, actual_pid);
             dis_cmd = "dis ZwCreateUserProcess";
+            break;
+
+        case MENU_AUTO_UNPATCH_NTDLL:
+        {
+            char rd_value[MAX_PATH] = { 0 };
+
+            if (BridgeSettingGet("dbgchild", "auto_unpatch_ntdll", rd_value))
+            {
+                bool auto_enable = true;
+                if (strcmp(rd_value, "true") == 0)
+                {
+                    auto_enable = true;
+                }
+                else
+                {
+                    auto_enable = false;
+                }
+                if (auto_enable)
+                {
+                    BridgeSettingSet("dbgchild", "auto_unpatch_ntdll", "false");
+                }
+                else
+                {
+                    BridgeSettingSet("dbgchild", "auto_unpatch_ntdll", "true");
+                }
+                _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable ? false : true);
+
+                BridgeSettingFlush();
+            }
+        }
+            break;
+
+        case MENU_CLEAR:
+        {
+            WCHAR find_path[MAX_PATH] = { 0 };
+            WIN32_FIND_DATAW fd;
+            HANDLE hFind;
+            WCHAR actual_file[MAX_PATH];
+
+            wcscpy_s(find_path, path);
+            wcscat_s(find_path, L"CPIDS\\*");
+
+            hFind = FindFirstFileW(find_path, &fd);
+            if (hFind != INVALID_HANDLE_VALUE)
+            {
+                do
+                {
+                    ZeroMemory(actual_file, sizeof(actual_file));
+                    wcscpy_s(actual_file, path);
+                    wcscat_s(actual_file, L"CPIDS\\");
+                    wcscat_s(actual_file, fd.cFileName);
+                    DeleteFileW(actual_file);
+                } while (FindNextFileW(hFind, &fd));
+                FindClose(hFind);
+            }
+        }
             break;
 
         case MENU_PATCH_NTDLL:
@@ -231,10 +344,12 @@ void pluginSetup()
 
 	// Add menu item entries
     _plugin_menuaddentry(hMenu, MENU_HOOK, "&Hook process creation");
-    _plugin_menuaddentry(hMenu, MENU_UNPATCH_NTDLL, "&Unpatch NTDLL entry");
     _plugin_menuaddseparator(hMenu);
-
+    _plugin_menuaddentry(hMenu, MENU_CLEAR, "&Clear CPIDS");
+    _plugin_menuaddseparator(hMenu);
+    _plugin_menuaddentry(hMenu, MENU_UNPATCH_NTDLL, "&Unpatch NTDLL entry");
     _plugin_menuaddentry(hMenu, MENU_PATCH_NTDLL, "&Patch NTDLL entry");
+    _plugin_menuaddentry(hMenu, MENU_AUTO_UNPATCH_NTDLL, "&Auto Unpatch NTDLL entry");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_NEW_PROCESS_WATCHER, "&Launch NewProcessWatcher");
@@ -261,5 +376,29 @@ void pluginSetup()
 	_plugin_menuentryseticon(pluginHandle, MENU_GO_TO_NTDLL, &gotontdll_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_HELP, &helpicon_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_INFO, &dbgchild_menu_icon);
+
+
+    char rd_value[MAX_PATH] = { 0 };
+    bool auto_enable = true;
+
+    if (BridgeSettingGet("dbgchild", "auto_unpatch_ntdll", rd_value) == false)
+    {
+        BridgeSettingSet("dbgchild", "auto_unpatch_ntdll", "true");
+        BridgeSettingFlush();
+    }
+    if (BridgeSettingGet("dbgchild", "auto_unpatch_ntdll", rd_value))
+    {
+        if (strcmp(rd_value, "true") == 0)
+        {
+            auto_enable = true;
+        }
+        else
+        {
+            auto_enable = false;
+        }
+    }
+
+    _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable);
+
 	
 }

@@ -46,6 +46,8 @@ typedef void (WINAPI* GetNativeSystemInfo_t)(
 extern LPFN_ISWOW64PROCESS fnIsWow64Process;
 extern GetNativeSystemInfo_t GetNativeSystemInfo_f;
 
+BOOL FileExistW(WCHAR* filename);
+
 BOOL Is64BitProcess(HANDLE process);
 
 BOOL Is64BitProcessPID(DWORD pid);

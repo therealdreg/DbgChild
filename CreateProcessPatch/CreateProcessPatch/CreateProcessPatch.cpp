@@ -366,7 +366,6 @@ void FillPayload(
     UNICODE_STRING NtFileName = { 0 };
     WCHAR own_dll_path[MAX_PATH] = { 0 };
     DWORD own_dll_path_size = 0;
-    DWORD dwAttrib = 0;
     WCHAR cpids_full_path[MAX_PATH] = { 0 };
 
     if (!MakePayloadPagesFullRights(payload_ep, payload_size))
@@ -418,9 +417,7 @@ void FillPayload(
 
     wprintf(L"Own DLL full path: %s\n", payload_dll_str);
 
-    dwAttrib = GetFileAttributesW(payload_dll_str);
-    if ((dwAttrib != INVALID_FILE_ATTRIBUTES &&
-        !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)))
+    if (FileExistW(payload_dll_str))
     {
         puts("OK - Own DLL full path exist");
     }
