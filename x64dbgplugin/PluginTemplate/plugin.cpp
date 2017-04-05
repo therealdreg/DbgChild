@@ -9,15 +9,10 @@
 #define POST_TXT L"x86_post.unicode.txt"
 #define PRE_TXT L"x86_pre.unicode.txt"
 #endif
-#define _CRT_SECURE_NO_WARNINGS
 
 
-ICONDATA newprocesswatcher_auto_yes_menu_icon;
-ICONDATA newprocesswatcher_auto_no_menu_icon;
-ICONDATA hookprocess_auto_yes_menu_icon;
-ICONDATA hookprocess_auto_no_menu_icon;
-ICONDATA patch_auto_yes_menu_icon;
-ICONDATA patch_auto_no_menu_icon;
+
+
 
 
 const int IDD_DIALOG1 = 101;
@@ -357,17 +352,7 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
                 {
                     BridgeSettingSet("dbgchild", "watcher_no_ask", "true");
                 }
-				
-				if (auto_enable == true)
-				{
-					_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, &newprocesswatcher_auto_no_menu_icon);
-				}
-				else
-				{
-					_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, &newprocesswatcher_auto_yes_menu_icon);
-				}
-
-                //_plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable ? false : true);
+                _plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable ? false : true);
 
                 BridgeSettingFlush();
             }
@@ -397,15 +382,7 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
                 {
                     BridgeSettingSet("dbgchild", "auto_unpatch_ntdll", "true");
                 }
-				if (auto_enable == true)
-				{
-					_plugin_menuentryseticon(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, &patch_auto_no_menu_icon);
-				}
-				else
-				{
-					_plugin_menuentryseticon(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, &patch_auto_yes_menu_icon);
-				}
-                //_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable ? false : true);
+                _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable ? false : true);
 
                 BridgeSettingFlush();
             }
@@ -435,15 +412,7 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
                 {
                     BridgeSettingSet("dbgchild", "auto_hook", "true");
                 }
-				if (auto_enable == true)
-				{
-					_plugin_menuentryseticon(pluginHandle, MENU_AUTO_HOOK, &hookprocess_auto_no_menu_icon);
-				}
-				else
-				{
-					_plugin_menuentryseticon(pluginHandle, MENU_AUTO_HOOK, &hookprocess_auto_yes_menu_icon);
-				}
-                //_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable ? false : true);
+                _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable ? false : true);
 
                 BridgeSettingFlush();
             }
@@ -605,18 +574,6 @@ void pluginSetup()
 	editsuspendedicon_menu_icon.size = sizeof(EditSuspendedIcon);
 	editresumedicon_menu_icon.data = EditResumedIcon;
 	editresumedicon_menu_icon.size = sizeof(EditResumedIcon);
-	newprocesswatcher_auto_yes_menu_icon.data = EyeYesIcon;
-	newprocesswatcher_auto_yes_menu_icon.size = sizeof(EyeYesIcon);
-	newprocesswatcher_auto_no_menu_icon.data = EyeNoIcon;
-	newprocesswatcher_auto_no_menu_icon.size = sizeof(EyeNoIcon);
-	hookprocess_auto_yes_menu_icon.data = AutoHookYesIcon;
-	hookprocess_auto_yes_menu_icon.size = sizeof(AutoHookYesIcon);
-	hookprocess_auto_no_menu_icon.data = AutoHookNoIcon;
-	hookprocess_auto_no_menu_icon.size = sizeof(AutoHookNoIcon);
-	patch_auto_yes_menu_icon.data = AutoPatchYesIcon;
-	patch_auto_yes_menu_icon.size = sizeof(AutoPatchYesIcon);
-	patch_auto_no_menu_icon.data = AutoPatchNoIcon;
-	patch_auto_no_menu_icon.size = sizeof(AutoPatchNoIcon);
 
 
 	// Add menu item entries
@@ -689,15 +646,7 @@ void pluginSetup()
             auto_enable = false;
         }
     }
-	if (auto_enable == true)
-	{
-		_plugin_menuentryseticon(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, &patch_auto_yes_menu_icon);
-	}
-	else
-	{
-		_plugin_menuentryseticon(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, &patch_auto_no_menu_icon);
-	}
-    //_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable);
+    _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable);
 
     ZeroMemory(rd_value, sizeof(rd_value));
     auto_enable = false;
@@ -717,17 +666,7 @@ void pluginSetup()
             auto_enable = false;
         }
     }
-
-	if (auto_enable == true)
-	{
-		_plugin_menuentryseticon(pluginHandle, MENU_AUTO_HOOK, &hookprocess_auto_yes_menu_icon);
-	}
-	else
-	{
-		_plugin_menuentryseticon(pluginHandle, MENU_AUTO_HOOK, &hookprocess_auto_no_menu_icon);
-	}
-    //_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable);
-
+    _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable);
 
     ZeroMemory(rd_value, sizeof(rd_value));
     auto_enable = false;
@@ -747,17 +686,7 @@ void pluginSetup()
             auto_enable = false;
         }
     }
-
-	if (auto_enable == true)
-	{
-		_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, &newprocesswatcher_auto_yes_menu_icon);
-	}
-	else
-	{
-		_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, &newprocesswatcher_auto_no_menu_icon);
-	}
-
-	//_plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable);
+	_plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable);
 	
 }
 
