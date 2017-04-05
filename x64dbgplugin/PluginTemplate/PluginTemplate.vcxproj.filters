@@ -293,6 +293,9 @@
     <ClInclude Include="Icons.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="pluginsdk\x32bridge.lib">
@@ -360,5 +363,11 @@
     <ClCompile Include="..\..\common\sources\com_common.cpp">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Resource.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="DbgChild.ico" />
   </ItemGroup>
 </Project>
