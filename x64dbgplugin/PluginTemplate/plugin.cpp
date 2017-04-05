@@ -139,6 +139,13 @@ PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
         }
     }
 
+    WCHAR remote_pid[ARRAYSIZE(L"4294967295")] = { 0 };
+    GetPIDFromUserDialogW(remote_pid);
+    if (remote_pid[0] != 0)
+    {
+        MessageBoxW(NULL, remote_pid, remote_pid, MB_OK);
+    }
+
     processEntry = Script::Module::EntryFromAddr(duint(info->CreateProcessInfo->lpBaseOfImage));
 
     if (auto_enable)
@@ -226,7 +233,7 @@ INT_PTR CALLBACK GetPIDDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	{
 	case WM_INITDIALOG:
 		hPIDText = GetDlgItem(hWnd, IDC_EDIT1);
-		SendMessage(hPIDText, EM_LIMITTEXT, 16, NULL);
+		SendMessageW(hPIDText, EM_LIMITTEXT, 16, NULL);
 		SetFocus(hPIDText);
 		return TRUE;
 
@@ -252,13 +259,16 @@ INT_PTR CALLBACK GetPIDDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	return TRUE;
 }
 
-void GetPIDFromUserDialog(wchar_t * out_pid_str)
+void GetPIDFromUserDialogW(wchar_t * out_pid_str)
 {
 	int ReturnVal = 0;
-	ReturnVal = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), hwndDlg, GetPIDDialogProc, NULL);
+
+    ZeroMemory(out_pid_str, sizeof(L"4294967295"));
+
+	ReturnVal = DialogBoxParamW(hInstance, MAKEINTRESOURCEW(IDD_DIALOG1), hwndDlg, GetPIDDialogProc, NULL);
 	if (ReturnVal != -1 && ReturnVal > 0)
 	{
-		_ultow(ReturnVal, out_pid_str, 10);
+		_itow_s((DWORD)ReturnVal, out_pid_str, ARRAYSIZE(L"4294967295"), 10);
 	}
 }
 
