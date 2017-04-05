@@ -9,6 +9,25 @@
 #define POST_TXT L"x86_post.unicode.txt"
 #define PRE_TXT L"x86_pre.unicode.txt"
 #endif
+#define _CRT_SECURE_NO_WARNINGS
+
+
+ICONDATA newprocesswatcher_auto_yes_menu_icon;
+ICONDATA newprocesswatcher_auto_no_menu_icon;
+ICONDATA hookprocess_auto_yes_menu_icon;
+ICONDATA hookprocess_auto_no_menu_icon;
+ICONDATA patch_auto_yes_menu_icon;
+ICONDATA patch_auto_no_menu_icon;
+
+
+const int IDD_DIALOG1 = 101;
+const int IDC_EDIT1 = 1001;
+const int IDC_BTNOK = 1002;
+const int IDC_BTNCANCEL = 1003;
+
+const int IDI_ICON1 = 102;
+
+HINSTANCE hInstance = 0;
 
 static duint processEntry;
 
@@ -31,6 +50,15 @@ enum
     MENU_HELP,
     MENU_INFO
 };
+
+PLUG_EXPORT BOOL APIENTRY DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+{
+	if (fdwReason == DLL_PROCESS_ATTACH)
+	{
+		hInstance = hinstDLL;
+	}
+	return TRUE;
+}
 
 PLUG_EXPORT void CBINITDEBUG(CBTYPE cbType, PLUG_CB_INITDEBUG* info)
 {
@@ -192,6 +220,53 @@ PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
 }
 
 
+
+// Dialog procedure to get process id from text box for remote patch
+INT_PTR CALLBACK GetPIDDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	int nPid = 0;
+	HWND hPIDText = 0;
+
+	switch (uMsg)
+	{
+	case WM_INITDIALOG:
+		hPIDText = GetDlgItem(hWnd, IDC_EDIT1);
+		SendMessage(hPIDText, EM_LIMITTEXT, 16, NULL);
+		SetFocus(hPIDText);
+		return TRUE;
+
+	case WM_CLOSE:
+		EndDialog(hWnd, 0);
+		break;
+
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDC_BTNOK:
+			nPid = GetDlgItemInt(hWnd, IDC_EDIT1, FALSE, FALSE);
+			EndDialog(hWnd, nPid);
+			break;
+		case IDC_BTNCANCEL:
+			EndDialog(hWnd, 0);
+		}
+		break;
+	default:
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
+void GetPIDFromUserDialog(wchar_t * out_pid_str)
+{
+	int ReturnVal = 0;
+	ReturnVal = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), hwndDlg, GetPIDDialogProc, NULL);
+	if (ReturnVal != -1 && ReturnVal > 0)
+	{
+		_ultow(ReturnVal, out_pid_str, 10);
+	}
+}
+
 PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
 {
     if (info->hEntry != MENU_INFO && 
@@ -282,7 +357,17 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
                 {
                     BridgeSettingSet("dbgchild", "watcher_no_ask", "true");
                 }
-                _plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable ? false : true);
+				
+				if (auto_enable == true)
+				{
+					_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, &newprocesswatcher_auto_no_menu_icon);
+				}
+				else
+				{
+					_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, &newprocesswatcher_auto_yes_menu_icon);
+				}
+
+                //_plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable ? false : true);
 
                 BridgeSettingFlush();
             }
@@ -312,7 +397,15 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
                 {
                     BridgeSettingSet("dbgchild", "auto_unpatch_ntdll", "true");
                 }
-                _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable ? false : true);
+				if (auto_enable == true)
+				{
+					_plugin_menuentryseticon(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, &patch_auto_no_menu_icon);
+				}
+				else
+				{
+					_plugin_menuentryseticon(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, &patch_auto_yes_menu_icon);
+				}
+                //_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable ? false : true);
 
                 BridgeSettingFlush();
             }
@@ -342,7 +435,15 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
                 {
                     BridgeSettingSet("dbgchild", "auto_hook", "true");
                 }
-                _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable ? false : true);
+				if (auto_enable == true)
+				{
+					_plugin_menuentryseticon(pluginHandle, MENU_AUTO_HOOK, &hookprocess_auto_no_menu_icon);
+				}
+				else
+				{
+					_plugin_menuentryseticon(pluginHandle, MENU_AUTO_HOOK, &hookprocess_auto_yes_menu_icon);
+				}
+                //_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable ? false : true);
 
                 BridgeSettingFlush();
             }
@@ -460,6 +561,8 @@ bool pluginStop()
     return true;
 }
 
+//HWND hwndDlg = 0;
+
 //Do GUI/Menu related things here.
 void pluginSetup()
 {
@@ -474,6 +577,9 @@ void pluginSetup()
 	ICONDATA gotontdll_menu_icon;
 	ICONDATA helpicon_menu_icon;
 	ICONDATA clearcpids_menu_icon;
+	ICONDATA browsecpids_menu_icon;
+	ICONDATA editresumedicon_menu_icon;
+	ICONDATA editsuspendedicon_menu_icon;
 	
 	dbgchild_menu_icon.data = DbgChildIcon;
 	dbgchild_menu_icon.size = sizeof(DbgChildIcon);
@@ -493,6 +599,24 @@ void pluginSetup()
 	helpicon_menu_icon.size = sizeof(HelpIcon);
 	clearcpids_menu_icon.data = ClearCPIDSIcon;
 	clearcpids_menu_icon.size = sizeof(ClearCPIDSIcon);
+	browsecpids_menu_icon.data = BrowseCPIDSIcon;
+	browsecpids_menu_icon.size = sizeof(BrowseCPIDSIcon);
+	editsuspendedicon_menu_icon.data = EditSuspendedIcon;
+	editsuspendedicon_menu_icon.size = sizeof(EditSuspendedIcon);
+	editresumedicon_menu_icon.data = EditResumedIcon;
+	editresumedicon_menu_icon.size = sizeof(EditResumedIcon);
+	newprocesswatcher_auto_yes_menu_icon.data = EyeYesIcon;
+	newprocesswatcher_auto_yes_menu_icon.size = sizeof(EyeYesIcon);
+	newprocesswatcher_auto_no_menu_icon.data = EyeNoIcon;
+	newprocesswatcher_auto_no_menu_icon.size = sizeof(EyeNoIcon);
+	hookprocess_auto_yes_menu_icon.data = AutoHookYesIcon;
+	hookprocess_auto_yes_menu_icon.size = sizeof(AutoHookYesIcon);
+	hookprocess_auto_no_menu_icon.data = AutoHookNoIcon;
+	hookprocess_auto_no_menu_icon.size = sizeof(AutoHookNoIcon);
+	patch_auto_yes_menu_icon.data = AutoPatchYesIcon;
+	patch_auto_yes_menu_icon.size = sizeof(AutoPatchYesIcon);
+	patch_auto_no_menu_icon.data = AutoPatchNoIcon;
+	patch_auto_no_menu_icon.size = sizeof(AutoPatchNoIcon);
 
 
 	// Add menu item entries
@@ -531,6 +655,7 @@ void pluginSetup()
 	_plugin_menuseticon(hMenu, &dbgchild_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_HOOK, &hookprocess_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_CLEAR, &clearcpids_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_OPENCPIDS, &browsecpids_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_UNPATCH_NTDLL, &unpatchntdll_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_PATCH_NTDLL, &patchntdll_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER, &newprocesswatcher_menu_icon);
@@ -539,7 +664,10 @@ void pluginSetup()
 	_plugin_menuentryseticon(pluginHandle, MENU_GO_TO_NTDLL, &gotontdll_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_HELP, &helpicon_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_INFO, &dbgchild_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_EDIT_PRE, &editsuspendedicon_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_EDIT_POST, &editresumedicon_menu_icon);
 
+	hwndDlg = GuiGetWindowHandle();
 
     char rd_value[MAX_PATH];
     bool auto_enable = true;
@@ -561,8 +689,15 @@ void pluginSetup()
             auto_enable = false;
         }
     }
-
-    _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable);
+	if (auto_enable == true)
+	{
+		_plugin_menuentryseticon(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, &patch_auto_yes_menu_icon);
+	}
+	else
+	{
+		_plugin_menuentryseticon(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, &patch_auto_no_menu_icon);
+	}
+    //_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_UNPATCH_NTDLL, auto_enable);
 
     ZeroMemory(rd_value, sizeof(rd_value));
     auto_enable = false;
@@ -583,7 +718,15 @@ void pluginSetup()
         }
     }
 
-    _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable);
+	if (auto_enable == true)
+	{
+		_plugin_menuentryseticon(pluginHandle, MENU_AUTO_HOOK, &hookprocess_auto_yes_menu_icon);
+	}
+	else
+	{
+		_plugin_menuentryseticon(pluginHandle, MENU_AUTO_HOOK, &hookprocess_auto_no_menu_icon);
+	}
+    //_plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_HOOK, auto_enable);
 
 
     ZeroMemory(rd_value, sizeof(rd_value));
@@ -605,6 +748,17 @@ void pluginSetup()
         }
     }
 
-    _plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable);
+	if (auto_enable == true)
+	{
+		_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, &newprocesswatcher_auto_yes_menu_icon);
+	}
+	else
+	{
+		_plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, &newprocesswatcher_auto_no_menu_icon);
+	}
+
+	//_plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable);
 	
 }
+
+
