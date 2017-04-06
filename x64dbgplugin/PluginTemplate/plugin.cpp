@@ -234,7 +234,8 @@ INT_PTR CALLBACK GetPIDDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	case WM_INITDIALOG:
 		hPIDText = GetDlgItem(hWnd, IDC_EDIT1);
 		SendMessageW(hPIDText, EM_LIMITTEXT, 16, NULL);
-		SetFocus(hPIDText);
+		PostMessageW(hWnd, WM_NEXTDLGCTL, (WPARAM) hPIDText, TRUE);
+		
 		return TRUE;
 
 	case WM_CLOSE:
