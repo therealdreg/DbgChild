@@ -5,7 +5,11 @@
 #ifdef _WIN64
 #define POST_TXT L"x64_post.unicode.txt"
 #define PRE_TXT L"x64_pre.unicode.txt"
+#define ARCH_TXT "x64"
+#define OTHER_ARCH_TXT "x32"
 #else
+#define ARCH_TXT "x32"
+#define OTHER_ARCH_TXT "x64"
 #define POST_TXT L"x86_post.unicode.txt"
 #define PRE_TXT L"x86_pre.unicode.txt"
 #endif
@@ -337,22 +341,71 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         ExecuteNewProcessLauncher(FALSE, path);
 
         GetPIDFromUserDialogW(actual_pid);
-        wcscpy_s(exe, L"CreateProcessPatch.exe");
-        wcscpy_s(args, actual_pid);
+        if (
+            Is64BitProcess(GetCurrentProcess()) 
+            != 
+            Is64BitProcessPID(_wtoi(actual_pid))
+           )
+        {
+            MessageBoxA(hwndDlg, 
+                "Error: You can only use " ARCH_TXT 
+                " for " ARCH_TXT " processes. You must use the " 
+                OTHER_ARCH_TXT " debugger/plugin version for this process."
+                
+                , PLUGIN_NAME, MB_ICONERROR);
+        }
+        else
+        { 
+            wcscpy_s(exe, L"CreateProcessPatch.exe");
+            wcscpy_s(args, actual_pid);
+        }
+        
         break;
 
     case MENU_REMOTE_NTDLL_PATCH:
         GetPIDFromUserDialogW(actual_pid);
-        wcscpy_s(exe, L"NTDLLEntryPatch.exe");
-        wcscpy_s(args, actual_pid);
-        wcscat_s(args, L" p");
+        if (
+            Is64BitProcess(GetCurrentProcess())
+            !=
+            Is64BitProcessPID(_wtoi(actual_pid))
+            )
+        {
+            MessageBoxA(hwndDlg,
+                "Error: You can only use " ARCH_TXT
+                " for " ARCH_TXT " processes. You must use the "
+                OTHER_ARCH_TXT " debugger/plugin version for this process."
+
+                , PLUGIN_NAME, MB_ICONERROR);
+        }
+        else
+        {
+            wcscpy_s(exe, L"NTDLLEntryPatch.exe");
+            wcscpy_s(args, actual_pid);
+            wcscat_s(args, L" p");
+        }
         break;
 
     case MENU_REMOTE_NTDLL_UNPATCH:
         GetPIDFromUserDialogW(actual_pid);
-        wcscpy_s(exe, L"NTDLLEntryPatch.exe");
-        wcscpy_s(args, actual_pid);
-        wcscat_s(args, L" u");
+        if (
+            Is64BitProcess(GetCurrentProcess())
+            !=
+            Is64BitProcessPID(_wtoi(actual_pid))
+            )
+        {
+            MessageBoxA(hwndDlg,
+                "Error: You can only use " ARCH_TXT
+                " for " ARCH_TXT " processes. You must use the "
+                OTHER_ARCH_TXT " debugger/plugin version for this process."
+
+                , PLUGIN_NAME, MB_ICONERROR);
+        }
+        else
+        {
+            wcscpy_s(exe, L"NTDLLEntryPatch.exe");
+            wcscpy_s(args, actual_pid);
+            wcscat_s(args, L" u");
+        }
         break;
 
     case MENU_EDIT_PRE:
@@ -659,9 +712,9 @@ void pluginSetup()
     _plugin_menuaddentry(hMenu, MENU_AUTO_HOOK, "&Auto Hook process creation");
     _plugin_menuaddseparator(hMenu);
 
-    _plugin_menuaddentry(hMenu, MENU_CLEAR, "&Clear CPIDS");
-    _plugin_menuaddentry(hMenu, MENU_OPENCPIDS, "&Open CPIDS");
-    _plugin_menuaddentry(hMenu, MENU_CREATE_CPID, "&Create CPIDS entry");
+    _plugin_menuaddentry(hMenu, MENU_CLEAR, "&Clear " ARCH_TXT "\\CPIDS");
+    _plugin_menuaddentry(hMenu, MENU_OPENCPIDS, "&Open " ARCH_TXT "\\CPIDS");
+    _plugin_menuaddentry(hMenu, MENU_CREATE_CPID, "&Create new entry " ARCH_TXT "\\CPIDS");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_UNPATCH_NTDLL, "&Unpatch NTDLL entry");
@@ -678,13 +731,13 @@ void pluginSetup()
     _plugin_menuaddentry(hMenu, MENU_GO_TO_NTDLL, "&Go to NTDLL patch");
     _plugin_menuaddseparator(hMenu);
 
-    _plugin_menuaddentry(hMenu, MENU_EDIT_PRE, "&Edit suspended command");
-    _plugin_menuaddentry(hMenu, MENU_EDIT_POST, "&Edit resumed command");
+    _plugin_menuaddentry(hMenu, MENU_EDIT_PRE, "&Edit " ARCH_TXT " suspended command");
+    _plugin_menuaddentry(hMenu, MENU_EDIT_POST, "&Edit " ARCH_TXT " resumed command");
     _plugin_menuaddseparator(hMenu);
 
-    _plugin_menuaddentry(hMenu, MENU_REMOTE_HOOK, "&Remote PID Hook process creation");
-    _plugin_menuaddentry(hMenu, MENU_REMOTE_NTDLL_PATCH, "&Remote PID Patch NTDLL entry");
-    _plugin_menuaddentry(hMenu, MENU_REMOTE_NTDLL_UNPATCH, "&Remote PID Unpatch NTDLL entry");
+    _plugin_menuaddentry(hMenu, MENU_REMOTE_HOOK, "&Remote " ARCH_TXT " PID Hook process creation");
+    _plugin_menuaddentry(hMenu, MENU_REMOTE_NTDLL_PATCH, "&Remote " ARCH_TXT " PID Patch NTDLL entry");
+    _plugin_menuaddentry(hMenu, MENU_REMOTE_NTDLL_UNPATCH, "&Remote " ARCH_TXT " PID Unpatch NTDLL entry");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_HELP, "&Help");
