@@ -678,8 +678,13 @@ void pluginSetup()
     ICONDATA helpicon_menu_icon;
     ICONDATA clearcpids_menu_icon;
     ICONDATA browsecpids_menu_icon;
+	ICONDATA addcpids_menu_icon;
     ICONDATA editresumedicon_menu_icon;
     ICONDATA editsuspendedicon_menu_icon;
+	ICONDATA remoteprocesshook_menu_icon;
+	ICONDATA remotentdllpatch_menu_icon;
+	ICONDATA remotentdllunpatch_menu_icon;
+	
 
     dbgchild_menu_icon.data = DbgChildIcon;
     dbgchild_menu_icon.size = sizeof(DbgChildIcon);
@@ -701,10 +706,19 @@ void pluginSetup()
     clearcpids_menu_icon.size = sizeof(ClearCPIDSIcon);
     browsecpids_menu_icon.data = BrowseCPIDSIcon;
     browsecpids_menu_icon.size = sizeof(BrowseCPIDSIcon);
+	addcpids_menu_icon.data = AddCPIDSIcon;
+	addcpids_menu_icon.size = sizeof(AddCPIDSIcon);	
     editsuspendedicon_menu_icon.data = EditSuspendedIcon;
     editsuspendedicon_menu_icon.size = sizeof(EditSuspendedIcon);
     editresumedicon_menu_icon.data = EditResumedIcon;
     editresumedicon_menu_icon.size = sizeof(EditResumedIcon);
+	remoteprocesshook_menu_icon.data = RemoteHookProcessIcon;
+	remoteprocesshook_menu_icon.size = sizeof(RemoteHookProcessIcon);
+	remotentdllpatch_menu_icon.data = RemoteNTDLLPatchIcon;
+	remotentdllpatch_menu_icon.size = sizeof(RemoteNTDLLPatchIcon);
+	remotentdllunpatch_menu_icon.data = RemoteNTDLLUnpatchIcon;
+	remotentdllunpatch_menu_icon.size = sizeof(RemoteNTDLLUnpatchIcon);
+
 
 
     // Add menu item entries
@@ -750,6 +764,7 @@ void pluginSetup()
     _plugin_menuentryseticon(pluginHandle, MENU_HOOK, &hookprocess_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_CLEAR, &clearcpids_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_OPENCPIDS, &browsecpids_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_CREATE_CPID, &addcpids_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_UNPATCH_NTDLL, &unpatchntdll_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_PATCH_NTDLL, &patchntdll_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER, &newprocesswatcher_menu_icon);
@@ -760,6 +775,10 @@ void pluginSetup()
     _plugin_menuentryseticon(pluginHandle, MENU_INFO, &dbgchild_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_EDIT_PRE, &editsuspendedicon_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_EDIT_POST, &editresumedicon_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_REMOTE_HOOK, &remoteprocesshook_menu_icon);
+    _plugin_menuentryseticon(pluginHandle, MENU_REMOTE_NTDLL_PATCH, &remotentdllpatch_menu_icon);
+    _plugin_menuentryseticon(pluginHandle, MENU_REMOTE_NTDLL_UNPATCH, &remotentdllunpatch_menu_icon);
+		
 
     hwndDlg = GuiGetWindowHandle();
 
