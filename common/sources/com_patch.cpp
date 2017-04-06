@@ -186,7 +186,9 @@ BOOL PatchCode(
     SIZE_T bytes_written = 0;
     DWORD old_protect = 0;
     DWORD now_protect = 0;
-    DWORD total_pages_size = (PAGE_ROUND_UP(address + (code_size - 1)) - PAGE_ROUND_DOWN(address));
+    DWORD total_pages_size = (PAGE_ROUND_UP(((unsigned char*)address) + (code_size - 1)) - PAGE_ROUND_DOWN(address));
+
+    printf("Number Total of bytes pages to change rights: %d ( %d pages )\n", total_pages_size, total_pages_size / PAGE_SIZE);
 
     VirtualProtectEx(process, (LPVOID)PAGE_ROUND_DOWN(address),
         total_pages_size,
