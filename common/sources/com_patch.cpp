@@ -183,12 +183,13 @@ BOOL PatchCode(
     SIZE_T size_new_code
 )
 {
-    SIZE_T bytes_written;
-    DWORD old_protect;
-    DWORD now_protect;
+    SIZE_T bytes_written = 0;
+    DWORD old_protect = 0;
+    DWORD now_protect = 0;
+    DWORD total_pages_size = (PAGE_ROUND_UP(address + (code_size - 1)) - PAGE_ROUND_DOWN(address));
 
     VirtualProtectEx(process, (LPVOID)PAGE_ROUND_DOWN(address),
-        PAGE_SIZE,
+        total_pages_size,
         PAGE_EXECUTE_READWRITE,
         &old_protect);
 
@@ -205,7 +206,7 @@ BOOL PatchCode(
     }
 
     VirtualProtectEx(process, (LPVOID)PAGE_ROUND_DOWN(address),
-        PAGE_SIZE,
+        total_pages_size,
         old_protect,
         &now_protect);
 
