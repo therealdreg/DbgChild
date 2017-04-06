@@ -232,6 +232,21 @@ INT_PTR CALLBACK GetPIDDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
+		HICON hIcon;
+
+		hIcon = (HICON) LoadImageW(hInstance,
+			MAKEINTRESOURCEW(IDI_ICON1),
+			IMAGE_ICON,
+			GetSystemMetrics(SM_CXSMICON),
+			GetSystemMetrics(SM_CYSMICON),
+			0);
+
+		if (hIcon)
+		{
+			SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+		}
+	
+
 		hPIDText = GetDlgItem(hWnd, IDC_EDIT1);
 		SendMessageW(hPIDText, EM_LIMITTEXT, 16, NULL);
 		PostMessageW(hWnd, WM_NEXTDLGCTL, (WPARAM) hPIDText, TRUE);
