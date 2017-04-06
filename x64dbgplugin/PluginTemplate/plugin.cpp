@@ -680,6 +680,9 @@ void pluginSetup()
     ICONDATA browsecpids_menu_icon;
     ICONDATA editresumedicon_menu_icon;
     ICONDATA editsuspendedicon_menu_icon;
+	ICONDATA remoteprocesshook_menu_icon;
+	ICONDATA remotentdllpatch_menu_icon;
+	ICONDATA remotentdllunpatch_menu_icon;
 
     dbgchild_menu_icon.data = DbgChildIcon;
     dbgchild_menu_icon.size = sizeof(DbgChildIcon);
@@ -705,6 +708,12 @@ void pluginSetup()
     editsuspendedicon_menu_icon.size = sizeof(EditSuspendedIcon);
     editresumedicon_menu_icon.data = EditResumedIcon;
     editresumedicon_menu_icon.size = sizeof(EditResumedIcon);
+	remoteprocesshook_menu_icon.data = RemoteHookProcessIcon;
+	remoteprocesshook_menu_icon.size = sizeof(RemoteHookProcessIcon);
+	remotentdllpatch_menu_icon.data = RemoteNTDLLPatchIcon;
+	remotentdllpatch_menu_icon.size = sizeof(RemoteNTDLLPatchIcon);
+	remotentdllunpatch_menu_icon.data = RemoteNTDLLUnpatchIcon;
+	remotentdllunpatch_menu_icon.size = sizeof(RemoteNTDLLUnpatchIcon);
 
 
     // Add menu item entries
@@ -760,6 +769,10 @@ void pluginSetup()
     _plugin_menuentryseticon(pluginHandle, MENU_INFO, &dbgchild_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_EDIT_PRE, &editsuspendedicon_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_EDIT_POST, &editresumedicon_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_REMOTE_HOOK, &remoteprocesshook_menu_icon);
+    _plugin_menuentryseticon(pluginHandle, MENU_REMOTE_NTDLL_PATCH, &remotentdllpatch_menu_icon);
+    _plugin_menuentryseticon(pluginHandle, MENU_REMOTE_NTDLL_UNPATCH, &remotentdllunpatch_menu_icon);
+		
 
     hwndDlg = GuiGetWindowHandle();
 
