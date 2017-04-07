@@ -430,7 +430,7 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         GetPIDFromUserDialogW(actual_pid);
         wcscat_s(path, L"CPIDS\\");
         wcscat_s(path, actual_pid);
-        CreateFileW(
+        CloseHandle(CreateFileW(
             path,
             GENERIC_READ,
             FILE_SHARE_READ,
@@ -438,7 +438,7 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             CREATE_ALWAYS,
             FILE_ATTRIBUTE_NORMAL,
             NULL
-        );
+        ));
         break;
 
     case MENU_OPENCPIDS:
