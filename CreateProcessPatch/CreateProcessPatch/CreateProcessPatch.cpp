@@ -514,7 +514,7 @@ void FillPayload(
         my_log,
         FALSE,
         LOG_TAG_INFO
-        L"Own DLL API name export: %S\n", (char*)payload_dll_func_name);
+        L"Own DLL API name export: %S\r\n", (char*)payload_dll_func_name);
 
     own_dll_path_size = (DWORD)(wcslen(own_dll_path) * sizeof(wchar_t));
     memcpy(payload_dll_str, own_dll_path, own_dll_path_size);
