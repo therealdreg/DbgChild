@@ -259,6 +259,8 @@ BOOL PatchCode(
     }
 
     WriteProcessMemory(process, address, code, code_size, &bytes_written);
+    
+    FlushInstructionCache(process, (void*) PAGE_ROUND_DOWN(address), total_pages_size);
 
     if (new_code != NULL)
     {
