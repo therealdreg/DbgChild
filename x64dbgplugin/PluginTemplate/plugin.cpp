@@ -191,7 +191,21 @@ PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
 
         if (FileExistW(cpids_x32_path) || FileExistW(cpids_x64_path))
         {
-            ShellExecuteW(NULL, L"runas", exe, args, cur_path, SW_SHOWNORMAL);
+            SHELLEXECUTEINFOW shell_args = { 0 };
+
+            shell_args.cbSize = sizeof(shell_args);
+            shell_args.nShow = SW_SHOWNORMAL;
+            shell_args.lpVerb = L"runas";
+            shell_args.fMask = SEE_MASK_NOCLOSEPROCESS;
+            shell_args.lpDirectory = cur_path;
+            shell_args.lpParameters = args;
+            shell_args.lpFile = exe;
+
+            ShellExecuteExW(&shell_args);
+
+            WaitForSingleObject(shell_args.hProcess, INFINITE);
+
+            CloseHandle(shell_args.hProcess);
         }
     }
 
@@ -229,7 +243,21 @@ PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
                 wcscat_s(args, L" l");
             }
 
-            ShellExecuteW(NULL, L"runas", exe, args, path, SW_SHOWNORMAL);
+            SHELLEXECUTEINFOW shell_args = { 0 };
+
+            shell_args.cbSize = sizeof(shell_args);
+            shell_args.nShow = SW_SHOWNORMAL;
+            shell_args.lpVerb = L"runas";
+            shell_args.fMask = SEE_MASK_NOCLOSEPROCESS;
+            shell_args.lpDirectory = path;
+            shell_args.lpParameters = args;
+            shell_args.lpFile = exe;
+
+            ShellExecuteExW(&shell_args);
+
+            WaitForSingleObject(shell_args.hProcess, INFINITE);
+
+            CloseHandle(shell_args.hProcess);
         }
     }
 }
