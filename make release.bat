@@ -26,6 +26,7 @@ devenv "DbgChildHookDLL\DbgChildHookDLL.sln" /rebuild "Release|x64"
 
 mkdir DbgChild_Release
 mkdir DbgChild_Release\release
+mkdir DbgChild_Release\release\dbgchildlogs
 mkdir DbgChild_Release\release\x32
 mkdir DbgChild_Release\release\x32\plugins
 mkdir DbgChild_Release\release\x32\CPIDS

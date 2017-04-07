@@ -63,19 +63,32 @@ size_t GetBytesInstructionsReplaced(
         count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address_to_show, 0,
             &insn);
 
-        printf("Disasm count: %d\n", (int)count);
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Disasm count: %d\r\n", (int)count);
         if (count > 0)
         {
             size_t j;
             for (j = 0; j < count; j++)
             {
-                printf("0x%" PRIXPTR " - ", (uintptr_t)insn[j].address);
+                LogW(
+                    my_log,
+                    FALSE, 
+                    L"0x%" PRIXPTR " - ", (uintptr_t)insn[j].address);
 
                 for (int k = 0; k < insn[j].size; k++)
                 {
-                    printf("0x%02X ", (int)((insn[j]).bytes[k]));
+                    LogW(
+                        my_log,
+                        FALSE, 
+                        L"0x%02X ", (int)((insn[j]).bytes[k]));
                 }
-                printf("- %s %s (%d bytes)\n", insn[j].mnemonic, insn[j].op_str, (int)(insn[j].size));
+                LogW(
+                    my_log,
+                    FALSE, 
+                    L"- %S %S (%d bytes)\r\n", insn[j].mnemonic, insn[j].op_str, (int)(insn[j].size));
                 total_bytes += insn[j].size;
                 if (total_bytes >= bytes_to_replaced)
                 {
@@ -88,13 +101,21 @@ size_t GetBytesInstructionsReplaced(
         }
         else
         {
-            fprintf(stderr, "Error Disas Library\n");
+            LogW(
+                my_log,
+                TRUE,
+                LOG_TAG_ERROR
+                L"Error Disas Library\r\n");
         }
         cs_close(&handle);
     }
     else
     {
-        fprintf(stderr, "Error Openning Disas Library\n");
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"Error Openning Disas Library\r\n");
     }
 
     return total_bytes;
@@ -119,7 +140,11 @@ BOOL CheckDangerousInstructions(void* address, void* address_to_show, size_t max
         count = cs_disasm(handle, (uint8_t*)address, max_bytes, (uint64_t)address_to_show, 0,
             &insn);
 
-        printf("Checking Dangerous Instructions (int3, jmp, call, ret, rip-relative...)\nDisasm count: %d\n", (int)count);
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Checking Dangerous Instructions (int3, jmp, call, ret, rip-relative...)\r\nDisasm count: %d\r\n", (int)count);
         if (count > 0)
         {
             size_t j;
@@ -134,13 +159,23 @@ BOOL CheckDangerousInstructions(void* address, void* address_to_show, size_t max
                     (strstr(insn[j].op_str, "rip") != NULL) // all RIP relative instr...
                     )
                 {
-                    fprintf(stderr, "WARNING: Dangerous instruction found:\n");
+                    LogW(
+                        my_log,
+                        FALSE,
+                        LOG_TAG_WARNING
+                        L"WARNING: Dangerous instruction found:\r\n");
                     printf("0x%" PRIXPTR " - ", (uintptr_t)insn[j].address);
                     for (int k = 0; k < insn[j].size; k++)
                     {
-                        printf("0x%02X ", (int)((insn[j]).bytes[k]));
+                        LogW(
+                            my_log,
+                            FALSE,
+                            L"0x%02X ", (int)((insn[j]).bytes[k]));
                     }
-                    printf("- %s %s (%d bytes)\n", insn[j].mnemonic, insn[j].op_str, (int)(insn[j].size));
+                    LogW(
+                        my_log,
+                        FALSE,
+                        L"- %S %S (%d bytes)\r\n", insn[j].mnemonic, insn[j].op_str, (int)(insn[j].size));
 
                     dangerous_inst_found = TRUE;
                 }
@@ -151,22 +186,38 @@ BOOL CheckDangerousInstructions(void* address, void* address_to_show, size_t max
         }
         else
         {
-            fprintf(stderr, "Error Disas Library\n");
+            LogW(
+                my_log,
+                TRUE,
+                LOG_TAG_ERROR
+                L"Error Disas Library\r\n");
         }
         cs_close(&handle);
     }
     else
     {
-        fprintf(stderr, "Error Openning Disas Library\n");
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"Error Openning Disas Library\r\n");
     }
 
     if (dangerous_inst_found == FALSE)
     {
-        printf("OK - No Dangerous Instructions found!\n");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_OK
+            L"OK - No Dangerous Instructions found!\r\n");
     }
     else
     {
-        fprintf(stderr, "WARNING: Dangerous Instruction should cause a crash (maybe Debugger Breakpoints, AntiVirus hook installed before, etc.)\n");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_WARNING
+            L"WARNING: Dangerous Instruction should cause a crash (maybe Debugger Breakpoints, AntiVirus hook installed before, etc.)\r\n");
     }
 
     return dangerous_inst_found;
@@ -188,7 +239,11 @@ BOOL PatchCode(
     DWORD now_protect = 0;
     DWORD total_pages_size = (PAGE_ROUND_UP(((unsigned char*)address) + (code_size - 1)) - PAGE_ROUND_DOWN(address));
 
-    printf("Number Total of bytes pages to change rights: %d ( %d pages )\n", total_pages_size, total_pages_size / PAGE_SIZE);
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"Number Total of bytes pages to change rights: %d ( %d pages )\r\n", total_pages_size, total_pages_size / PAGE_SIZE);
 
     VirtualProtectEx(process, (LPVOID)PAGE_ROUND_DOWN(address),
         total_pages_size,

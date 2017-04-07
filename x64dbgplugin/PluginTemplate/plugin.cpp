@@ -15,7 +15,7 @@
 #endif
 
 
-
+MY_OWN_LOGW_t * my_log;
 
 
 
@@ -34,6 +34,8 @@ enum
 {
     MENU_HOOK,
     MENU_CREATE_CPID,
+    MENU_OPENLOGS,
+    MENU_CLEARLOGS,
     MENU_REMOTE_HOOK,
     MENU_REMOTE_NTDLL_PATCH,
     MENU_REMOTE_NTDLL_UNPATCH,
@@ -302,7 +304,9 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         info->hEntry != MENU_REMOTE_HOOK &&
         info->hEntry != MENU_REMOTE_NTDLL_PATCH &&
         info->hEntry != MENU_REMOTE_NTDLL_UNPATCH &&
-        info->hEntry != MENU_CREATE_CPID
+        info->hEntry != MENU_CREATE_CPID &&
+        info->hEntry != MENU_OPENLOGS &&
+        info->hEntry != MENU_CLEARLOGS
         )
     {
         if (!DbgIsDebugging())
@@ -441,6 +445,37 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         op_type = L"explore";
         wcscpy_s(exe, path);
         wcscat_s(exe, L"CPIDS");
+        break;
+
+    case MENU_OPENLOGS:
+        op_type = L"explore";
+        GetLogPath(exe);
+        break;
+        
+    case MENU_CLEARLOGS:
+    {
+        WCHAR find_path[MAX_PATH] = { 0 };
+        WIN32_FIND_DATAW fd;
+        HANDLE hFind;
+        WCHAR actual_file[MAX_PATH];
+
+        GetLogPath(path);
+        GetLogPath(find_path);
+        wcscat_s(find_path, L"*");
+
+        hFind = FindFirstFileW(find_path, &fd);
+        if (hFind != INVALID_HANDLE_VALUE)
+        {
+            do
+            {
+                ZeroMemory(actual_file, sizeof(actual_file));
+                wcscpy_s(actual_file, path);
+                wcscat_s(actual_file, fd.cFileName);
+                DeleteFileW(actual_file);
+            } while (FindNextFileW(hFind, &fd));
+            FindClose(hFind);
+        }
+    }
         break;
 
     case MENU_NEW_PROCESS_WATCHER_NO_ASK:
@@ -635,7 +670,8 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         info->hEntry == MENU_OPENCPIDS ||
         info->hEntry == MENU_REMOTE_HOOK ||
         info->hEntry == MENU_REMOTE_NTDLL_PATCH ||
-        info->hEntry == MENU_REMOTE_NTDLL_UNPATCH
+        info->hEntry == MENU_REMOTE_NTDLL_UNPATCH ||
+        info->hEntry == MENU_OPENLOGS
         )
     {
         ShellExecuteW(NULL, op_type, exe, args, path, SW_SHOWNORMAL);
@@ -723,7 +759,7 @@ void pluginSetup()
 
     // Add menu item entries
     _plugin_menuaddentry(hMenu, MENU_HOOK, "&Hook process creation");
-    _plugin_menuaddentry(hMenu, MENU_AUTO_HOOK, "&Auto Hook process creation");
+    _plugin_menuaddentry(hMenu, MENU_AUTO_HOOK, "&Auto from " ARCH_TXT "dbg Hook process creation");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_CLEAR, "&Clear " ARCH_TXT "\\CPIDS");
@@ -733,12 +769,12 @@ void pluginSetup()
 
     _plugin_menuaddentry(hMenu, MENU_UNPATCH_NTDLL, "&Unpatch NTDLL entry");
     _plugin_menuaddentry(hMenu, MENU_PATCH_NTDLL, "&Patch NTDLL entry");
-    _plugin_menuaddentry(hMenu, MENU_AUTO_UNPATCH_NTDLL, "&Auto Unpatch NTDLL entry");
+    _plugin_menuaddentry(hMenu, MENU_AUTO_UNPATCH_NTDLL, "&Auto from " ARCH_TXT "dbg Unpatch NTDLL entry");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_NEW_PROCESS_WATCHER, "&Launch NewProcessWatcher");
     _plugin_menuaddentry(hMenu, MENU_NEW_PROCESS_WATCHER_OLD, "&Launch NewProcessWatcher with old processes");
-    _plugin_menuaddentry(hMenu, MENU_NEW_PROCESS_WATCHER_NO_ASK, "&Launch NewProcessWatcher without ask");
+    _plugin_menuaddentry(hMenu, MENU_NEW_PROCESS_WATCHER_NO_ASK, "&Launch from " ARCH_TXT "dbg NewProcessWatcher without ask");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_GO_TO_HOOK, "&Go to Hook process creation");
@@ -752,6 +788,10 @@ void pluginSetup()
     _plugin_menuaddentry(hMenu, MENU_REMOTE_HOOK, "&Remote " ARCH_TXT " PID Hook process creation");
     _plugin_menuaddentry(hMenu, MENU_REMOTE_NTDLL_PATCH, "&Remote " ARCH_TXT " PID Patch NTDLL entry");
     _plugin_menuaddentry(hMenu, MENU_REMOTE_NTDLL_UNPATCH, "&Remote " ARCH_TXT " PID Unpatch NTDLL entry");
+    _plugin_menuaddseparator(hMenu);
+
+    _plugin_menuaddentry(hMenu, MENU_OPENLOGS, "&Open logs");
+    _plugin_menuaddentry(hMenu, MENU_CLEARLOGS, "&Clear logs");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_HELP, "&Help");

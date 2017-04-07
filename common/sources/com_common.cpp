@@ -117,6 +117,11 @@ void GetCurrentPath(WCHAR * current_path)
     while (tmp_ptr[0] != '\\')
     {
         tmp_ptr--;
+        if (tmp_ptr <= current_path)
+        {
+            ZeroMemory(current_path, sizeof(wchar_t) * MAX_PATH);
+            return;
+        }
     }
     tmp_ptr[1] = 0;
 }
@@ -128,7 +133,26 @@ BOOL EnableDebugPrivilege()
     
     OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &currentProcessToken);
     
-    return SetPrivilegeW(currentProcessToken, L"SeDebugPrivilege", TRUE);
+    BOOL retf = SetPrivilegeW(currentProcessToken, L"SeDebugPrivilege", TRUE);
+
+    if (retf)
+    {
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_OK
+            L"Enabling debug priv\r\n");
+    }
+    else
+    {
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"Enabling debug priv\r\n");
+    }
+
+    return retf;
 }
 
 BOOL SetPrivilegeW(
@@ -145,7 +169,11 @@ BOOL SetPrivilegeW(
         lpszPrivilege,   // privilege to lookup 
         &luid))        // receives LUID of privilege
     {
-        printf("LookupPrivilegeValue error: %u\n", GetLastError());
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"LookupPrivilegeValue error: %u\r\n", GetLastError());
         return FALSE;
     }
 
@@ -166,16 +194,182 @@ BOOL SetPrivilegeW(
         (PTOKEN_PRIVILEGES)NULL,
         (PDWORD)NULL))
     {
-        printf("AdjustTokenPrivileges error: %u\n", GetLastError());
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"AdjustTokenPrivileges error: %u\r\n", GetLastError());
         return FALSE;
     }
 
     if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
 
     {
-        printf("The token does not have the specified privilege. \n");
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"The token does not have the specified privilege.\r\n");
         return FALSE;
     }
 
     return TRUE;
+}
+
+void CloseLog(MY_OWN_LOGW_t* my_log)
+{
+    CloseHandle(my_log->file);
+
+    ZeroMemory(my_log, sizeof(*my_log));
+    
+    free(my_log);
+}
+
+MY_OWN_LOGW_t* CreateLogW(WCHAR* log_path, BOOL show_stdout, BOOL show_stderr)
+{
+    MY_OWN_LOGW_t* retf = NULL;
+
+    retf = (MY_OWN_LOGW_t*) calloc(1, sizeof(MY_OWN_LOGW_t));
+    if (retf != NULL)
+    {
+        retf->file = CreateFileW(
+            log_path,
+            GENERIC_WRITE,
+            FILE_SHARE_READ,
+            NULL,
+            CREATE_ALWAYS,
+            FILE_ATTRIBUTE_NORMAL,
+            0
+        );
+
+        retf->show_stdout = show_stdout;
+        retf->show_stderr = show_stderr;
+
+        if (retf->file == INVALID_HANDLE_VALUE)
+        {
+            free(retf);
+            retf = NULL;
+        }
+        else
+        {
+            DWORD bytes_written;
+            unsigned char utf_16_bom[] = { 0xFF, 0xFE };
+
+            WriteFile(retf->file, utf_16_bom, sizeof(utf_16_bom), &bytes_written, NULL);
+            FlushFileBuffers(retf->file);
+        }
+    }
+
+    return retf;
+}
+
+void GetLogPath(WCHAR* log_path)
+{
+    WCHAR actual_path[MAX_PATH];
+    wchar_t* tmp_ptr;
+
+    ZeroMemory(log_path, sizeof(WCHAR) * MAX_PATH);
+
+    GetCurrentPath(log_path);
+    //bullshit algorithm, very crap here
+    tmp_ptr = log_path;
+    tmp_ptr += wcslen(log_path);
+    do
+    {
+        ZeroMemory(actual_path, sizeof(WCHAR) * MAX_PATH);
+        wcscpy_s(actual_path, log_path);
+        wcscat_s(actual_path, L"dbgchildlogs");
+        tmp_ptr[0] = 0;
+        while (tmp_ptr[0] != '\\')
+        {
+            tmp_ptr--;
+            if (tmp_ptr <= log_path)
+            {
+                ZeroMemory(log_path, sizeof(wchar_t) * MAX_PATH);
+                return;
+            }
+        }
+        tmp_ptr[1] = 0;
+    } while (!DirExistW(actual_path));
+
+    ZeroMemory(log_path, sizeof(WCHAR) * MAX_PATH);
+    wcscpy_s(log_path, MAX_PATH, actual_path);
+    wcscat_s(log_path, MAX_PATH, L"\\");
+}
+
+void LogW(MY_OWN_LOGW_t* log, bool is_error, WCHAR* format, ...)
+{
+    WCHAR* buffer = NULL;
+    DWORD bytes_written = 0;
+    DWORD bytes_to_write = 0;
+    int len = 0;
+    bool free_buff = true;
+    va_list args;
+
+    va_start(args, format);
+    if (my_log != NULL)
+    {
+        len = _vscwprintf(format, args) + 1;
+        buffer = (WCHAR*) calloc(len, sizeof(WCHAR));
+        if (buffer == NULL)
+        {
+            free_buff = false;
+            buffer = L"Fail calloc log buffer\r\n";
+            len = wcslen(buffer) + 1;
+        }
+        else
+        {
+            free_buff = true;
+        }
+
+        vswprintf_s(buffer, len, format, args);
+        bytes_to_write = (len - 1) * sizeof(WCHAR);
+        WriteFile(log->file, buffer, bytes_to_write, &bytes_written, NULL);
+        FlushFileBuffers(log->file);
+
+        if (is_error)
+        {
+            if (log->show_stderr)
+            {
+                fwprintf(stderr, buffer);
+                fflush(stderr);
+            }
+        }
+        else
+        {
+            if (log->show_stdout)
+            {
+                wprintf(buffer);
+                fflush(stdout);
+            }
+        }
+
+        if (free_buff)
+        {
+            free(buffer);
+        }
+    }
+    va_end(args);
+}
+
+
+MY_OWN_LOGW_t* InitLog(wchar_t* component_name)
+{
+    wchar_t actual_pid[ARRAYSIZE(L"4294967295")] = { 0 };
+    wchar_t log_path[MAX_PATH] = { 0 };
+
+    wprintf(L"Searching log path...\n");
+
+    _itow_s(GetCurrentProcessId(), actual_pid, 10);
+
+    GetLogPath(log_path);
+
+    wcscat_s(log_path, component_name);
+    wcscat_s(log_path, L".");
+    wcscat_s(log_path, actual_pid);
+    wcscat_s(log_path, L".unicode.txt");
+
+    wprintf(L"\nlog path: %s\n\n", log_path);
+
+    return CreateLogW(log_path, TRUE, TRUE);
 }

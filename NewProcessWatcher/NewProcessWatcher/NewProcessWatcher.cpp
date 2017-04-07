@@ -78,6 +78,8 @@ Consistent Variable Names
 ....
 */
 
+MY_OWN_LOGW_t* my_log = NULL;
+
 int main(int argc, char** argv)
 {
 

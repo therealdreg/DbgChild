@@ -51,4 +51,5 @@ BOOL PatchCode(
     void* new_code, 
     SIZE_T size_new_code
 );
+
 #endif /* _COM_PATCH_H__ */

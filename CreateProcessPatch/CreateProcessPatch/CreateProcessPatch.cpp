@@ -40,6 +40,8 @@ Consistent Variable Names
 ....
 */
 
+MY_OWN_LOGW_t* my_log;
+
 LdrLoadDll_t LdrLoadDll_f = (LdrLoadDll_t)GetProcAddress(GetModuleHandleW(
     L"ntdll.dll"),
     "LdrLoadDll");
@@ -61,28 +63,32 @@ void* ZwCreateUserProcess_f = (void*)GetProcAddress(
 
 int main(int argc, char* argv[])
 {
-    printf("\n"
-        "DbgChild - Create Process Patch\n"
-        "-\n"
-        "MIT License\n"
-        "-\n"
-        "Copyright (c) <2017> <David Reguera Garcia aka Dreg>\n"
-        "http://www.fr33project.org/\n"
-        "https://github.com/David-Reguera-Garcia-Dreg\n"
-        "dreg@fr33project.org\n"
-        "- \n"
-        "CreateProcessPatch Version: "
+    my_log = InitLog(L"CreateProcessPatch");
+
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"\r\n"
+        L"DbgChild - Create Process Patch\r\n"
+        L"-\r\n"
+        L"MIT License\r\n"
+        L"-\r\n"
+        L"Copyright (c) <2017> <David Reguera Garcia aka Dreg>\r\n"
+        L"http://www.fr33project.org/\r\n"
+        L"https://github.com/David-Reguera-Garcia-Dreg\r\n"
+        L"dreg@fr33project.org\r\n"
+        L"-\r\n"
+        L"CreateProcessPatch Version: %s\r\n\r\n"
+        ,
+#ifdef _WIN64
+        L"x64"
+#else
+        L"x86"
+#endif
     );
 
     EnableDebugPrivilege();
-
-#ifdef _WIN64
-    puts("x64");
-#else
-    puts("x86");
-#endif
-
-    puts("-\n");
 
     if (argc > 1)
     {
@@ -91,11 +97,15 @@ int main(int argc, char* argv[])
     }
     else
     {
-        fprintf(stderr, "Syntax Error, Usage: program.exe PID_DECIMAL\n");
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            "Syntax Error, Usage: program.exe PID_DECIMAL\r\n"
+        );
     }
 
-    puts("\nPress ENTER to exit.");
-    getchar();
+    CloseLog(my_log);
 
     return 0;
 }
@@ -159,7 +169,10 @@ void CreateProcessPatch(DWORD pid)
         PROCESS_VM_WRITE |
         PROCESS_QUERY_INFORMATION, FALSE, pid);
 
-    printf("PID: %" PRIu64 " , Handle: %" PRIu64 "\n", (uint64_t)pid, (uint64_t)hProcess);
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO "PID: %" PRIu64 " , Handle: %" PRIu64 "\r\n", (uint64_t)pid, (uint64_t)hProcess);
 
     if (hProcess)
     {
@@ -193,38 +206,57 @@ void CreateProcessPatch(DWORD pid)
         DWORD size_pushret = 6;
 #endif
 
-        puts(
-            "Process Openned!\n"
-            "Assuming the local NTDLL its equal to remote NTDLL (for disas etc)"
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_OK
+            L"Process Openned!\r\n"
+            L"Assuming the local NTDLL its equal to remote NTDLL (for disas etc)\r\n"
         );
 
-        printf("Remote process is: ");
+        wchar_t* is_proc_str = NULL;
         if (is_64_proc)
         {
-            puts("x64");
+            is_proc_str = L"x64";
         }
         else
         {
-            puts("x32");
+            is_proc_str = L"x32";
         }
+
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Remote process is: %s\r\n"
+            ,
+            is_proc_str
+        );
 
         if (is_64_proc != Is64BitProcess(GetCurrentProcess()))
         {
-            fprintf(stderr, "Error, you must use:\n"
-                "CreateProcessPatch_x32 for x32 processes.\n"
-                "CreateProcessPatch_x64 for x64 processes.\n"
+            LogW(
+                my_log,
+                TRUE, 
+                LOG_TAG_ERROR
+                L"Error, you must use:\r\n"
+                L"CreateProcessPatch_x32 for x32 processes.\r\n"
+                L"CreateProcessPatch_x64 for x64 processes.\r\n"
             );
             CloseHandle(hProcess);
             return;
         }
 
-        printf(
-            "NTDLL: 0x%" PRIXPTR "\n"
-            "NTDLL DOS STUB PATCH (only x64): 0x%" PRIXPTR "\n"
-            "ZwCreateUserProcess: 0x%" PRIXPTR "\n"
-            "LdrLoadDll: 0x%" PRIXPTR "\n"
-            "LdrGetProcedureAddress: 0x%" PRIXPTR "\n"
-            "RtlDosPathNameToRelativeNtPathName_U: 0x%" PRIXPTR "\n",
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"NTDLL: 0x%" PRIXPTR "\r\n"
+            L"NTDLL DOS STUB PATCH (only x64): 0x%" PRIXPTR "\r\n"
+            L"ZwCreateUserProcess: 0x%" PRIXPTR "\r\n"
+            L"LdrLoadDll: 0x%" PRIXPTR "\r\n"
+            L"LdrGetProcedureAddress: 0x%" PRIXPTR "\r\n"
+            L"RtlDosPathNameToRelativeNtPathName_U: 0x%" PRIXPTR "\r\n",
             (uintptr_t)ntdll_base,
             (uintptr_t)ntdll_dos_stub,
             (uintptr_t)ZwCreateUserProcess_f,
@@ -232,7 +264,11 @@ void CreateProcessPatch(DWORD pid)
             (uintptr_t)LdrGetProcedureAddress_f,
             (uintptr_t)RtlDosPathNameToRelativeNtPathName_U_f);
 
-        printf("Local Payload EP: 0x%" PRIXPTR " , Payload Size 0x%X\n",
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Local Payload EP: 0x%" PRIXPTR " , Payload Size 0x%X\r\n",
             (uintptr_t)payload_ep,
             payload_size);
 
@@ -243,9 +279,17 @@ void CreateProcessPatch(DWORD pid)
             MEM_COMMIT | MEM_RESERVE,
             PAGE_EXECUTE_READWRITE);
 
-        printf("Remote Process Payload EP: 0x%" PRIXPTR "\n", (uintptr_t)payload);
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Remote Process Payload EP: 0x%" PRIXPTR "\r\n", (uintptr_t)payload);
 
-        printf("Dis Base Address: 0x%" PRIXPTR " , bytes to replaced: %d , max_bytes %d\n",
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Dis Base Address: 0x%" PRIXPTR " , bytes to replaced: %d , max_bytes %d\r\n",
             (uintptr_t)ZwCreateUserProcess_f,
             (int)size_pushret,
             (int)0x40);
@@ -256,14 +300,22 @@ void CreateProcessPatch(DWORD pid)
             size_pushret,
             0x40);
 
-        printf("Total instructions bytes to replace %d\n", (int)total_bytes);
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Total instructions bytes to replace %d\r\n", (int)total_bytes);
 
         zwcreateuserprocess_next_valid_instruction =
             ((unsigned char*)ZwCreateUserProcess_f)
             +
             total_bytes;
 
-        printf("Next valid instruction after the hook: 0x%" PRIXPTR "\n", (uintptr_t)zwcreateuserprocess_next_valid_instruction);
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Next valid instruction after the hook: 0x%" PRIXPTR "\r\n", (uintptr_t)zwcreateuserprocess_next_valid_instruction);
         GetBytesInstructionsReplaced(
             zwcreateuserprocess_next_valid_instruction,
             zwcreateuserprocess_next_valid_instruction,
@@ -274,7 +326,11 @@ void CreateProcessPatch(DWORD pid)
         memcpy(trampoline_ptr, ((unsigned char*)ZwCreateUserProcess_f), total_bytes);
         trampoline_ptr += total_bytes;
 
-        printf("Checking Dangerous Instruction in trampoline...\n");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Checking Dangerous Instruction in trampoline...\r\n");
         CheckDangerousInstructions(ZwCreateUserProcess_f, ZwCreateUserProcess_f, total_bytes);
 
 #ifdef _WIN64
@@ -291,7 +347,11 @@ void CreateProcessPatch(DWORD pid)
         trampoline_ptr += sizeof(zwcreateuserprocess_next_valid_instruction);
 #endif
 
-        puts("Trampoline created:");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Trampoline created:\r\n");
         GetBytesInstructionsReplaced(
             trampoline,
             trampoline,
@@ -303,11 +363,19 @@ void CreateProcessPatch(DWORD pid)
             NULL);
 
         PatchCode(hProcess, payload, payload_ep, payload_size, NULL, 0, NULL, 0);
-        puts("Written remote payload!");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_OK
+            L"Written remote payload!\r\n");
 
 #ifdef _WIN64
         PatchCode(hProcess, ntdll_dos_stub, &payload, sizeof(payload), NULL, 0, NULL, 0);
-        puts("Written absolute address to payload in remote NTDLL DOS STUB!");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_OK
+            L"Written absolute address to payload in remote NTDLL DOS STUB!\r\n");
 
         *jmp_dest = (DWORD)(ntdll_dos_stub - (((unsigned char*)ZwCreateUserProcess_f) +
             (size_pushret - 1)));
@@ -326,23 +394,43 @@ void CreateProcessPatch(DWORD pid)
         );
 
 #ifdef _WIN64
-        puts("PUSH [NTDLL DOS STUB] + RET written in remote ZwCreateUserProcess EP");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_OK
+            L"PUSH [NTDLL DOS STUB] + RET written in remote ZwCreateUserProcess EP\r\n");
 #else
-        puts("PUSH + RET written in remote ZwCreateUserProcess EP");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_OK
+            L"PUSH + RET written in remote ZwCreateUserProcess EP\r\n");
 #endif
 
-        puts("Remote instructions before the patch:");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Remote instructions before the patch:\r\n");
         total_bytes = GetBytesInstructionsReplaced(code_before_patch, ZwCreateUserProcess_f, total_bytes, sizeof(code_before_patch));
         CheckDangerousInstructions(code_before_patch, ZwCreateUserProcess_f, total_bytes);
         
-        puts("Remote instructions after the patch:");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Remote instructions after the patch:\r\n");
         GetBytesInstructionsReplaced(code_after_patch, ZwCreateUserProcess_f, total_bytes, sizeof(code_after_patch));
 
         CloseHandle(hProcess);
     }
     else
     {
-        fprintf(stderr, "Error Openning Process.\n");
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"Error Openning Process.\r\n");
     }
 }
 
@@ -370,18 +458,30 @@ void FillPayload(
 
     if (!MakePayloadPagesFullRights(payload_ep, payload_size))
     {
-        fprintf(stderr, "Error Make Local Payload Memory with Full Rights\n");
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"Error Make Local Payload Memory with Full Rights\r\n");
         return;
     }
 
-    puts("Changed Local Payload Memory with Full Rights");
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_OK
+        L"Changed Local Payload Memory with Full Rights\r\n");
 
     if (dll_work_full_path == NULL)
     {
         GetCurrentPath(current_path);
         dll_work_full_path = current_path;
     }
-    wprintf(L"Own DLL dir work path: %s\n", dll_work_full_path);
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"Own DLL dir work path: %s\r\n", dll_work_full_path);
 
     wcscpy_s(own_dll_path, dll_work_full_path);
     wcscpy_s(cpids_full_path, own_dll_path);
@@ -393,7 +493,11 @@ void FillPayload(
     memcpy(payload_dll_work_full_path, NtFileName.Buffer,
         (NtFileName.Length > MAX_PATH) ? MAX_PATH : NtFileName.Length);
 
-    wprintf(L"Own DLL dir work path to NT path: %s\n", payload_dll_work_full_path);
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"Own DLL dir work path to NT path: %s\r\n", payload_dll_work_full_path);
 
     memcpy(get_trampoline(), trampoline, trampoline_size);
 
@@ -406,7 +510,11 @@ void FillPayload(
     payload_dll_ansi_string->MaximumLength = sizeof(API_NAME_A);
     payload_dll_ansi_string->Length = sizeof(API_NAME_A) - 1;
 
-    printf("Own DLL API name export: %s\n", (char*)payload_dll_func_name);
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"Own DLL API name export: %S\n", (char*)payload_dll_func_name);
 
     own_dll_path_size = (DWORD)(wcslen(own_dll_path) * sizeof(wchar_t));
     memcpy(payload_dll_str, own_dll_path, own_dll_path_size);
@@ -415,38 +523,61 @@ void FillPayload(
     payload_dll_unicode_str->MaximumLength = (USHORT)(own_dll_path_size + 2);
     payload_dll_unicode_str->Length = (USHORT)own_dll_path_size;
 
-    wprintf(L"Own DLL full path: %s\n", payload_dll_str);
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"Own DLL full path: %s\r\n", payload_dll_str);
 
     if (FileExistW(payload_dll_str))
     {
-        puts("OK - Own DLL full path exist");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_OK
+            L"OK - Own DLL full path exist\r\n");
     }
     else
     {
-        fprintf(stderr, "WARNING - Own DLL full path NO EXIST!\n");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_WARNING
+            L"WARNING - Own DLL full path NO EXIST!\r\n");
     }
 
     wcscat_s(cpids_full_path, L"CPIDS");
-    wprintf(L"Checking CPIDS path: %s\n", cpids_full_path);
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"Checking CPIDS path: %s\r\n", cpids_full_path);
     if (DirExistW(cpids_full_path))
     {
-        puts("OK - CPIDS path exist");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_OK
+            L"OK - CPIDS path exist\r\n");
     }
     else
     {
-        fprintf(stderr, "WARNING - CPIDS path NO EXIST!\n");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_WARNING
+            L"WARNING - CPIDS path NO EXIST!\r\n");
     }
 }
 
 BOOL MakePayloadPagesFullRights(void* payload_address, size_t size)
 {
-    DWORD old_protect;
-    DWORD total_pages = PAGE_ROUND_UP(((unsigned char*)payload_address) + size)
-        - PAGE_ROUND_DOWN(payload_address);
+    DWORD old_protect = 0;
+    DWORD total_pages_bytes = (PAGE_ROUND_UP(((unsigned char*)payload_address) + (size - 1)) - PAGE_ROUND_DOWN(payload_address));
 
     return VirtualProtect(
         (LPVOID)PAGE_ROUND_DOWN(payload_address),
-        total_pages,
+        total_pages_bytes,
         PAGE_EXECUTE_READWRITE,
         &old_protect);
 }

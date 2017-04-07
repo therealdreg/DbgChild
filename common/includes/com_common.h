@@ -44,7 +44,22 @@ typedef void (WINAPI* GetNativeSystemInfo_t)(
     );
 
 extern LPFN_ISWOW64PROCESS fnIsWow64Process;
+
 extern GetNativeSystemInfo_t GetNativeSystemInfo_f;
+
+#define LOG_TAG_INFO L"TAG_INFO: \r\n"
+#define LOG_TAG_ERROR L"TAG_ERROR: \r\n"
+#define LOG_TAG_WARNING L"TAG_WARNING: \r\n"
+#define LOG_TAG_OK L"TAG_OK: \r\n"
+
+typedef struct
+{
+    HANDLE file;
+    BOOL show_stdout;
+    BOOL show_stderr;
+} MY_OWN_LOGW_t;
+
+extern MY_OWN_LOGW_t* my_log;
 
 BOOL FileExistW(WCHAR* filename);
 
@@ -59,6 +74,16 @@ void GetCurrentPath(WCHAR * current_path);
 BOOL EnableDebugPrivilege();
 
 BOOL SetPrivilegeW(HANDLE hToken, LPWSTR lpszPrivilege, BOOL bEnablePrivilege);
+
+void CloseLog(MY_OWN_LOGW_t* my_log);
+
+MY_OWN_LOGW_t* CreateLogW(WCHAR* log_path, BOOL show_stdout, BOOL show_stderr);
+
+void LogW(MY_OWN_LOGW_t* log, bool is_error, WCHAR* format, ...);
+
+void GetLogPath(WCHAR* log_path);
+
+MY_OWN_LOGW_t* InitLog(wchar_t* component_name);
 
 #endif /* _COM_COMMON_H__ */
 

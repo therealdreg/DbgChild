@@ -40,13 +40,16 @@ Consistent Variable Names
 ....
 */
 
+MY_OWN_LOGW_t* my_log;
+
 int main(int argc, char* argv[])
 {
+    my_log = InitLog(L"NTDLLEntryPatch");
+
     int retf = NTDLLEntryPatch(argc, argv);
 
-    puts("Press enter to exit.");
-    getchar();
-    
+    CloseLog(my_log);
+
     return retf;
 }
 
@@ -55,26 +58,28 @@ int NTDLLEntryPatch(int argc, char** argv)
     DWORD pid = 0;
     bool patch = false;
 
-    printf("\n"
-        "DbgChild - NTDLL Entry Patch\n"
-        "-\n"
-        "MIT License\n"
-        "-\n"
-        "Copyright (c) <2017> <David Reguera Garcia aka Dreg>\n"
-        "http://www.fr33project.org/\n"
-        "https://github.com/David-Reguera-Garcia-Dreg\n"
-        "dreg@fr33project.org\n"
-        "- \n"
-        "NTDLL Entry Patch Version: "
-    );
-
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"\r\n"
+        L"DbgChild - NTDLL Entry Patch\r\n"
+        L"-\r\n"
+        L"MIT License\r\n"
+        L"-\r\n"
+        L"Copyright (c) <2017> <David Reguera Garcia aka Dreg>\r\n"
+        L"http://www.fr33project.org/\r\n"
+        L"https://github.com/David-Reguera-Garcia-Dreg\r\n"
+        L"dreg@fr33project.org\r\n"
+        L"-\r\n"
+        L"NTDLLEntryPatch Version: %s\r\n\r\n"
+        ,
 #ifdef _WIN64
-    puts("x64");
+        L"x64"
 #else
-    puts("x86");
+        L"x86"
 #endif
-
-    puts("-\n");
+    );
 
     EnableDebugPrivilege();
 
@@ -107,9 +112,13 @@ int NTDLLEntryPatch(int argc, char** argv)
 
 void BadSyntax(void)
 {
-    fprintf(stderr, "Error syntax, use: command.exe PID p/u\n"
-        "   'p' for patch\n"
-        "   'u' for unpatch\n");
+    LogW(
+        my_log,
+        TRUE,
+        LOG_TAG_ERROR
+        L"Error syntax, use: command.exe PID p/u\r\n"
+        L"   'p' for patch\r\n"
+        L"   'u' for unpatch\r\n");
 }
 
 bool PatchUnpatchNTDLL(DWORD pid, bool patch)
@@ -121,15 +130,32 @@ bool PatchUnpatchNTDLL(DWORD pid, bool patch)
 
     if (patch)
     {
-        puts("PATCH MODE");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"PATCH MODE\r\n");
     }
     else
     {
-        puts("UNPATCH MODE");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"UNPATCH MODE\r\n");
     }
 
-    printf("NTDLL EP LdrInitializeThunk: 0x%" PRIXPTR "\n", (uintptr_t)ntdll_ep);
-    printf("PID: %" PRIu64 " , Handle: %" PRIu64 "\n", (uint64_t)pid, (uint64_t)hProcess);
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"NTDLL EP LdrInitializeThunk: 0x%" PRIXPTR "\r\n"
+        L"PID: %" PRIu64 " , Handle: %" PRIu64 "\r\n"
+        ,
+        (uintptr_t)ntdll_ep,
+        (uint64_t)pid, 
+        (uint64_t)hProcess
+    );
 
     if (hProcess)
     {
@@ -142,26 +168,29 @@ bool PatchUnpatchNTDLL(DWORD pid, bool patch)
         unsigned char code_after_patch[0x40] = { 0 };
         DWORD total_bytes = 0;
 
-        puts(
-            "Process Openned!\n"
-            "Assuming the local NTDLL its unpatched"
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Process Openned!\r\n"
+            L"Assuming the local NTDLL its unpatched\r\n"
         );
 
-        printf("Remote process is: ");
-        if (is_64_proc)
-        {
-            puts("x64");
-        }
-        else
-        {
-            puts("x32");
-        }
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Remote process is: %s\r\n", is_64_proc ? L"x64" : L"x32");
 
         if (is_64_proc != Is64BitProcess(GetCurrentProcess()))
         {
-            fprintf(stderr, "Error, you must use:\n"
-                "NTDLLEntryPatch_x32 for x32 processes.\n"
-                "NTDLLEntryPatch_x64 for x64 processes.\n"
+            LogW(
+                my_log,
+                TRUE,
+                LOG_TAG_ERROR
+                L"Error, you must use:\r\n"
+                L"NTDLLEntryPatch_x32 for x32 processes.\r\n"
+                L"NTDLLEntryPatch_x64 for x64 processes.\r\n"
             );
             CloseHandle(hProcess);
             return FALSE;
@@ -171,11 +200,19 @@ bool PatchUnpatchNTDLL(DWORD pid, bool patch)
         {
             jmp_itfself[0] = ((unsigned char*)ntdll_ep)[0];
             jmp_itfself[1] = ((unsigned char*)ntdll_ep)[1];
-            printf("Unpatching with: 0x%02X 0x%02X \n", jmp_itfself[0], jmp_itfself[1]);
+            LogW(
+                my_log,
+                FALSE,
+                LOG_TAG_INFO
+                L"Unpatching with: 0x%02X 0x%02X \r\n", jmp_itfself[0], jmp_itfself[1]);
         }
         else
         {
-            printf("Patching with JMP itself: 0x%02X 0x%02X \n", jmp_itfself[0], jmp_itfself[1]);
+            LogW(
+                my_log,
+                FALSE,
+                LOG_TAG_INFO
+                L"Patching with JMP itself: 0x%02X 0x%02X \r\n", jmp_itfself[0], jmp_itfself[1]);
         }
 
         PatchCode(
@@ -189,14 +226,22 @@ bool PatchUnpatchNTDLL(DWORD pid, bool patch)
             sizeof(code_after_patch)
         );
 
-        puts("Remote instructions before the patch:");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Remote instructions before the patch:\r\n");
         total_bytes = GetBytesInstructionsReplaced(code_before_patch, ntdll_ep, sizeof(jmp_itfself), sizeof(code_before_patch));
         if (patch)
         {
             CheckDangerousInstructions(code_before_patch, ntdll_ep, total_bytes);
         }
 
-        puts("Remote instructions after the patch:");
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"Remote instructions after the patch:\r\n");
         total_bytes = GetBytesInstructionsReplaced(code_after_patch, ntdll_ep, sizeof(jmp_itfself), sizeof(code_after_patch));
         if (!patch)
         {
@@ -207,7 +252,11 @@ bool PatchUnpatchNTDLL(DWORD pid, bool patch)
     }
     else
     {
-        fprintf(stderr, "Error openning process\n");
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"Error openning process\r\n");
     }
 
     return true;
