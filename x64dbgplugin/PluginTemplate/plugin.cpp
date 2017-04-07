@@ -33,6 +33,7 @@ static duint processEntry;
 enum
 {
     MENU_HOOK,
+    MENU_AUTO_OPEN_LOGS,
     MENU_CREATE_CPID,
     MENU_OPENLOGS,
     MENU_CLEARLOGS,
@@ -131,6 +132,7 @@ void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
     }
 }
 
+BOOL open_log = FALSE;
 
 PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
 {
@@ -172,6 +174,10 @@ PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
         wcscpy_s(exe, L"NTDLLEntryPatch.exe");
         wcscpy_s(args, actual_pid);
         wcscat_s(args, L" u");
+        if (open_log)
+        {
+            wcscat_s(args, L" l");
+        }
 
         ZeroMemory(&(cpids_x32_path[wcslen(cpids_x32_path) - 4]), 2);
 
@@ -218,6 +224,10 @@ PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
             wcscpy_s(exe, L"CreateProcessPatch.exe");
 
             wcscpy_s(args, actual_pid);
+            if (open_log)
+            {
+                wcscat_s(args, L" l");
+            }
 
             ShellExecuteW(NULL, L"runas", exe, args, path, SW_SHOWNORMAL);
         }
@@ -306,7 +316,8 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         info->hEntry != MENU_REMOTE_NTDLL_UNPATCH &&
         info->hEntry != MENU_CREATE_CPID &&
         info->hEntry != MENU_OPENLOGS &&
-        info->hEntry != MENU_CLEARLOGS
+        info->hEntry != MENU_CLEARLOGS &&
+        info->hEntry != MENU_AUTO_OPEN_LOGS
         )
     {
         if (!DbgIsDebugging())
@@ -331,6 +342,38 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
 
     switch (info->hEntry)
     {
+    case MENU_AUTO_OPEN_LOGS:
+    {
+        char rd_value[MAX_PATH] = { 0 };
+
+        if (BridgeSettingGet("dbgchild", "auto_open_logs", rd_value))
+        {
+            bool auto_enable = true;
+            if (strcmp(rd_value, "true") == 0)
+            {
+                auto_enable = true;
+            }
+            else
+            {
+                auto_enable = false;
+            }
+            if (auto_enable)
+            {
+                BridgeSettingSet("dbgchild", "auto_open_logs", "false");
+            }
+            else
+            {
+                BridgeSettingSet("dbgchild", "auto_open_logs", "true");
+            }
+            open_log = auto_enable ? false : true;
+            _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_OPEN_LOGS, open_log);
+
+            BridgeSettingFlush();
+        }
+
+    }
+        break;
+
     case MENU_HOOK:
         DbgCmdExecDirect("bc ZwCreateUserProcess");
 
@@ -338,6 +381,10 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
 
         wcscpy_s(exe, L"CreateProcessPatch.exe");
         wcscpy_s(args, actual_pid);
+        if (open_log)
+        {
+            wcscat_s(args, L" l");
+        }
         dis_cmd = "dis ZwCreateUserProcess";
         break;
 
@@ -362,6 +409,10 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         { 
             wcscpy_s(exe, L"CreateProcessPatch.exe");
             wcscpy_s(args, actual_pid);
+            if (open_log)
+            {
+                wcscat_s(args, L" l");
+            }
         }
         
         break;
@@ -386,6 +437,10 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             wcscpy_s(exe, L"NTDLLEntryPatch.exe");
             wcscpy_s(args, actual_pid);
             wcscat_s(args, L" p");
+            if (open_log)
+            {
+                wcscat_s(args, L" l");
+            }
         }
         break;
 
@@ -409,6 +464,10 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
             wcscpy_s(exe, L"NTDLLEntryPatch.exe");
             wcscpy_s(args, actual_pid);
             wcscat_s(args, L" u");
+            if (open_log)
+            {
+                wcscat_s(args, L" l");
+            }
         }
         break;
 
@@ -600,6 +659,10 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         wcscpy_s(exe, L"NTDLLEntryPatch.exe");
         wcscpy_s(args, actual_pid);
         wcscat_s(args, L" p");
+        if (open_log)
+        {
+            wcscat_s(args, L" l");
+        }
         dis_cmd = "dis LdrInitializeThunk";
         break;
 
@@ -609,6 +672,10 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         wcscpy_s(exe, L"NTDLLEntryPatch.exe");
         wcscpy_s(args, actual_pid);
         wcscat_s(args, L" u");
+        if (open_log)
+        {
+            wcscat_s(args, L" l");
+        }
         dis_cmd = "dis LdrInitializeThunk";
 
         if (BridgeSettingGetUint("Events", "EntryBreakpoint", &breakEntry) && breakEntry)
@@ -805,6 +872,7 @@ void pluginSetup()
 
     _plugin_menuaddentry(hMenu, MENU_OPENLOGS, "&Open logs");
     _plugin_menuaddentry(hMenu, MENU_CLEARLOGS, "&Clear logs");
+    _plugin_menuaddentry(hMenu, MENU_AUTO_OPEN_LOGS, "&Auto from " ARCH_TXT " Open Logs");
     _plugin_menuaddseparator(hMenu);
 
     _plugin_menuaddentry(hMenu, MENU_HELP, "&Help");
@@ -909,6 +977,27 @@ void pluginSetup()
     }
     _plugin_menuentrysetchecked(pluginHandle, MENU_NEW_PROCESS_WATCHER_NO_ASK, auto_enable);
 
+
+    ZeroMemory(rd_value, sizeof(rd_value));
+    auto_enable = true;
+    if (BridgeSettingGet("dbgchild", "auto_open_logs", rd_value) == false)
+    {
+        BridgeSettingSet("dbgchild", "auto_open_logs", "true");
+        BridgeSettingFlush();
+    }
+    if (BridgeSettingGet("dbgchild", "auto_open_logs", rd_value))
+    {
+        if (strcmp(rd_value, "true") == 0)
+        {
+            auto_enable = true;
+        }
+        else
+        {
+            auto_enable = false;
+        }
+    }
+    open_log = auto_enable;
+    _plugin_menuentrysetchecked(pluginHandle, MENU_AUTO_OPEN_LOGS, auto_enable);
 }
 
 

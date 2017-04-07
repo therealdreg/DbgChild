@@ -225,6 +225,11 @@ void CloseLog(MY_OWN_LOGW_t* my_log)
     free(my_log);
 }
 
+WCHAR* GetLogFullPathW(MY_OWN_LOGW_t* log)
+{
+    return log->full_path;
+}
+
 MY_OWN_LOGW_t* CreateLogW(WCHAR* log_path, BOOL show_stdout, BOOL show_stderr)
 {
     MY_OWN_LOGW_t* retf = NULL;
@@ -232,6 +237,7 @@ MY_OWN_LOGW_t* CreateLogW(WCHAR* log_path, BOOL show_stdout, BOOL show_stderr)
     retf = (MY_OWN_LOGW_t*) calloc(1, sizeof(MY_OWN_LOGW_t));
     if (retf != NULL)
     {
+        wcscpy_s(retf->full_path, MAX_PATH, log_path);
         retf->file = CreateFileW(
             log_path,
             GENERIC_WRITE,

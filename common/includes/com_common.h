@@ -54,6 +54,7 @@ extern GetNativeSystemInfo_t GetNativeSystemInfo_f;
 
 typedef struct
 {
+    WCHAR full_path[MAX_PATH];
     HANDLE file;
     BOOL show_stdout;
     BOOL show_stderr;
@@ -76,6 +77,8 @@ BOOL EnableDebugPrivilege();
 BOOL SetPrivilegeW(HANDLE hToken, LPWSTR lpszPrivilege, BOOL bEnablePrivilege);
 
 void CloseLog(MY_OWN_LOGW_t* my_log);
+
+WCHAR* GetLogFullPathW(MY_OWN_LOGW_t* log);
 
 MY_OWN_LOGW_t* CreateLogW(WCHAR* log_path, BOOL show_stdout, BOOL show_stderr);
 

@@ -239,16 +239,19 @@ BOOL PatchCode(
     DWORD now_protect = 0;
     DWORD total_pages_size = (PAGE_ROUND_UP(((unsigned char*)address) + (code_size - 1)) - PAGE_ROUND_DOWN(address));
 
-    LogW(
-        my_log,
-        FALSE,
-        LOG_TAG_INFO
-        L"Number Total of bytes pages to change rights: %d ( %d pages )\r\n", total_pages_size, total_pages_size / PAGE_SIZE);
-
     VirtualProtectEx(process, (LPVOID)PAGE_ROUND_DOWN(address),
         total_pages_size,
         PAGE_EXECUTE_READWRITE,
         &old_protect);
+
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"Number Total of bytes pages to change rights: %d ( %d pages )\r\n"
+        L"New protect: 0x%X\r\n"
+        L"Old protect before patch: 0x%X\r\n"
+        , total_pages_size, total_pages_size / PAGE_SIZE, PAGE_EXECUTE_READWRITE, old_protect);
 
     if (original_code != NULL)
     {
@@ -266,6 +269,13 @@ BOOL PatchCode(
         total_pages_size,
         old_protect,
         &now_protect);
+
+    LogW(
+        my_log,
+        FALSE,
+        LOG_TAG_INFO
+        L"Old protect after patch: 0x%X\r\n"
+        , now_protect);
 
     return TRUE;
 }

@@ -48,7 +48,19 @@ int main(int argc, char* argv[])
 
     int retf = NTDLLEntryPatch(argc, argv);
 
+    WCHAR full_path_log[MAX_PATH] = { 0 };
+
+    wcscpy_s(full_path_log, GetLogFullPathW(my_log));
+
     CloseLog(my_log);
+
+    if (argc >= 4)
+    {
+        if (tolower((argv[3])[0]) == 'l')
+        {
+            ShellExecuteW(NULL, L"open", full_path_log, NULL, NULL, SW_SHOWNORMAL);
+        }
+    }
 
     return retf;
 }
