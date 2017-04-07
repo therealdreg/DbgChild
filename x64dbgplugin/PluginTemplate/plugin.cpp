@@ -720,43 +720,56 @@ void pluginSetup()
 	ICONDATA remoteprocesshook_menu_icon;
 	ICONDATA remotentdllpatch_menu_icon;
 	ICONDATA remotentdllunpatch_menu_icon;
-	
+	ICONDATA openlogs_menu_icon;
+	ICONDATA clearlogs_menu_icon;
 
     dbgchild_menu_icon.data = DbgChildIcon;
     dbgchild_menu_icon.size = sizeof(DbgChildIcon);
+
     hookprocess_menu_icon.data = HookProcessIcon;
     hookprocess_menu_icon.size = sizeof(HookProcessIcon);
-    patchntdll_menu_icon.data = patchNTDLLIcon;
-    patchntdll_menu_icon.size = sizeof(patchNTDLLIcon);
-    unpatchntdll_menu_icon.data = unpatchNTDLLIcon;
-    unpatchntdll_menu_icon.size = sizeof(unpatchNTDLLIcon);
-    newprocesswatcher_menu_icon.data = NewProcessWatcherIcon;
-    newprocesswatcher_menu_icon.size = sizeof(NewProcessWatcherIcon);
-    gotohook_menu_icon.data = GotoHookIcon;
-    gotohook_menu_icon.size = sizeof(GotoHookIcon);
-    gotontdll_menu_icon.data = GotoNTDLLIcon;
-    gotontdll_menu_icon.size = sizeof(GotoNTDLLIcon);
-    helpicon_menu_icon.data = HelpIcon;
-    helpicon_menu_icon.size = sizeof(HelpIcon);
+
     clearcpids_menu_icon.data = ClearCPIDSIcon;
     clearcpids_menu_icon.size = sizeof(ClearCPIDSIcon);
     browsecpids_menu_icon.data = BrowseCPIDSIcon;
     browsecpids_menu_icon.size = sizeof(BrowseCPIDSIcon);
 	addcpids_menu_icon.data = AddCPIDSIcon;
 	addcpids_menu_icon.size = sizeof(AddCPIDSIcon);	
+	
+    patchntdll_menu_icon.data = patchNTDLLIcon;
+    patchntdll_menu_icon.size = sizeof(patchNTDLLIcon);
+    unpatchntdll_menu_icon.data = unpatchNTDLLIcon;
+    unpatchntdll_menu_icon.size = sizeof(unpatchNTDLLIcon);
+	
+    newprocesswatcher_menu_icon.data = NewProcessWatcherIcon;
+    newprocesswatcher_menu_icon.size = sizeof(NewProcessWatcherIcon);
+	
+    gotohook_menu_icon.data = GotoHookIcon;
+    gotohook_menu_icon.size = sizeof(GotoHookIcon);
+    gotontdll_menu_icon.data = GotoNTDLLIcon;
+    gotontdll_menu_icon.size = sizeof(GotoNTDLLIcon);
+
     editsuspendedicon_menu_icon.data = EditSuspendedIcon;
     editsuspendedicon_menu_icon.size = sizeof(EditSuspendedIcon);
     editresumedicon_menu_icon.data = EditResumedIcon;
     editresumedicon_menu_icon.size = sizeof(EditResumedIcon);
+	
 	remoteprocesshook_menu_icon.data = RemoteHookProcessIcon;
 	remoteprocesshook_menu_icon.size = sizeof(RemoteHookProcessIcon);
 	remotentdllpatch_menu_icon.data = RemoteNTDLLPatchIcon;
 	remotentdllpatch_menu_icon.size = sizeof(RemoteNTDLLPatchIcon);
 	remotentdllunpatch_menu_icon.data = RemoteNTDLLUnpatchIcon;
 	remotentdllunpatch_menu_icon.size = sizeof(RemoteNTDLLUnpatchIcon);
+	
+	openlogs_menu_icon.data = OpenLogsIcon;
+	openlogs_menu_icon.size = sizeof(OpenLogsIcon);
+	clearlogs_menu_icon.data = ClearLogsIcon;
+	clearlogs_menu_icon.size = sizeof(ClearLogsIcon);
+	
+    helpicon_menu_icon.data = HelpIcon;
+    helpicon_menu_icon.size = sizeof(HelpIcon);
 
-
-
+	
     // Add menu item entries
     _plugin_menuaddentry(hMenu, MENU_HOOK, "&Hook process creation");
     _plugin_menuaddentry(hMenu, MENU_AUTO_HOOK, "&Auto from " ARCH_TXT "dbg Hook process creation");
@@ -799,27 +812,39 @@ void pluginSetup()
 
     _plugin_menuaddentry(hMenu, MENU_INFO, "&Plugin info by Dreg");
 
+	
     // Add icons to menu item entries
     _plugin_menuseticon(hMenu, &dbgchild_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_HOOK, &hookprocess_menu_icon);
+	
     _plugin_menuentryseticon(pluginHandle, MENU_CLEAR, &clearcpids_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_OPENCPIDS, &browsecpids_menu_icon);
 	_plugin_menuentryseticon(pluginHandle, MENU_CREATE_CPID, &addcpids_menu_icon);
+	
     _plugin_menuentryseticon(pluginHandle, MENU_UNPATCH_NTDLL, &unpatchntdll_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_PATCH_NTDLL, &patchntdll_menu_icon);
+	
     _plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER, &newprocesswatcher_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_NEW_PROCESS_WATCHER_OLD, &newprocesswatcher_menu_icon);
+	
     _plugin_menuentryseticon(pluginHandle, MENU_GO_TO_HOOK, &gotohook_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_GO_TO_NTDLL, &gotontdll_menu_icon);
-    _plugin_menuentryseticon(pluginHandle, MENU_HELP, &helpicon_menu_icon);
-    _plugin_menuentryseticon(pluginHandle, MENU_INFO, &dbgchild_menu_icon);
+	
     _plugin_menuentryseticon(pluginHandle, MENU_EDIT_PRE, &editsuspendedicon_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_EDIT_POST, &editresumedicon_menu_icon);
+	
 	_plugin_menuentryseticon(pluginHandle, MENU_REMOTE_HOOK, &remoteprocesshook_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_REMOTE_NTDLL_PATCH, &remotentdllpatch_menu_icon);
     _plugin_menuentryseticon(pluginHandle, MENU_REMOTE_NTDLL_UNPATCH, &remotentdllunpatch_menu_icon);
-		
+	
+	_plugin_menuentryseticon(pluginHandle, MENU_OPENLOGS, &openlogs_menu_icon);
+	_plugin_menuentryseticon(pluginHandle, MENU_CLEARLOGS, &clearlogs_menu_icon);
+	
+    _plugin_menuentryseticon(pluginHandle, MENU_HELP, &helpicon_menu_icon);
+	
+    _plugin_menuentryseticon(pluginHandle, MENU_INFO, &dbgchild_menu_icon);
 
+	
     hwndDlg = GuiGetWindowHandle();
 
     char rd_value[MAX_PATH];
