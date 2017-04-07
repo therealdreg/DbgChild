@@ -258,10 +258,13 @@ BOOL PatchCode(
         ReadProcessMemory(process, address, original_code, size_original_code, &bytes_written);
     }
 
-    WriteProcessMemory(process, address, code, code_size, &bytes_written);
-    
-    FlushInstructionCache(process, (void*) PAGE_ROUND_DOWN(address), total_pages_size);
+    SuspendProcess(process);
 
+    WriteProcessMemory(process, address, code, code_size, &bytes_written);
+    FlushInstructionCache(process, (void*)PAGE_ROUND_DOWN(address), total_pages_size);
+
+    ResumeProcess(process);
+    
     if (new_code != NULL)
     {
         ReadProcessMemory(process, address, new_code, size_new_code, &bytes_written);

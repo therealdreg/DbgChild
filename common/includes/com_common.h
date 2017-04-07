@@ -80,6 +80,14 @@ void CloseLog(MY_OWN_LOGW_t* my_log);
 
 WCHAR* GetLogFullPathW(MY_OWN_LOGW_t* log);
 
+void ResumeProcess(HANDLE process);
+
+void SuspendProcess(HANDLE process);
+
+void SuspendProcessPID(DWORD pid);
+
+void ResumeProcessPID(DWORD pid);
+
 MY_OWN_LOGW_t* CreateLogW(WCHAR* log_path, BOOL show_stdout, BOOL show_stderr);
 
 void LogW(MY_OWN_LOGW_t* log, bool is_error, WCHAR* format, ...);

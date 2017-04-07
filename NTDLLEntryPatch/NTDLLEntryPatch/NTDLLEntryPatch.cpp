@@ -137,7 +137,7 @@ bool PatchUnpatchNTDLL(DWORD pid, bool patch)
 {
     HANDLE hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ |
         PROCESS_VM_WRITE |
-        PROCESS_QUERY_INFORMATION, FALSE, pid);
+        PROCESS_QUERY_INFORMATION | PROCESS_SUSPEND_RESUME, FALSE, pid);
     void* ntdll_ep = GetProcAddress(GetModuleHandleW(L"ntdll"), "LdrInitializeThunk");
 
     if (patch)

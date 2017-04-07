@@ -379,3 +379,80 @@ MY_OWN_LOGW_t* InitLog(wchar_t* component_name)
 
     return CreateLogW(log_path, TRUE, TRUE);
 }
+
+void ResumeProcessPID(DWORD pid)
+{
+    HANDLE hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ |
+        PROCESS_VM_WRITE |
+        PROCESS_QUERY_INFORMATION | PROCESS_SUSPEND_RESUME, FALSE, pid);
+
+    ResumeProcess(hProcess);
+
+    CloseHandle(hProcess);
+}
+
+void SuspendProcessPID(DWORD pid)
+{
+    HANDLE hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ |
+        PROCESS_VM_WRITE |
+        PROCESS_QUERY_INFORMATION | PROCESS_SUSPEND_RESUME, FALSE, pid);
+
+    SuspendProcess(hProcess);
+
+    CloseHandle(hProcess);
+}
+
+typedef LONG(NTAPI *NtSuspendProcess)(IN HANDLE ProcessHandle);
+
+typedef LONG(NTAPI *NtResumeProcess)(IN HANDLE ProcessHandle);
+
+void ResumeProcess(HANDLE process)
+{
+    static NtSuspendProcess pfnNtResumeProcess = (NtSuspendProcess)GetProcAddress(
+        GetModuleHandleW(L"ntdll"), "NtResumeProcess");
+
+    if (pfnNtResumeProcess != NULL)
+    {
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"NtResumeProcess ret: %d\r\n", pfnNtResumeProcess(process)
+        ); 
+    }
+    else
+    {
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"NtResumeProcess cant resolved\r\n"
+        );
+    }
+}
+
+void SuspendProcess(HANDLE process)
+{
+    static NtSuspendProcess pfnNtSuspendProcess = (NtSuspendProcess)GetProcAddress(
+        GetModuleHandleW(L"ntdll"), "NtSuspendProcess");
+
+    if (pfnNtSuspendProcess != NULL)
+    {
+        LogW(
+            my_log,
+            FALSE,
+            LOG_TAG_INFO
+            L"NtSuspendProcess ret: %d\r\n", pfnNtSuspendProcess(process)
+        );
+        
+    }
+    else
+    {
+        LogW(
+            my_log,
+            TRUE,
+            LOG_TAG_ERROR
+            L"NtSuspendProcess cant resolved\r\n"
+        );
+    }
+}
