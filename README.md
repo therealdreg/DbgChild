@@ -103,7 +103,19 @@ Once extracted the contents should look something like this:
 ![](/Images/DbgChildProcess.png?raw=true) `Plugin Info By Dreg` - About dialog box showing information about this plugin
 
 
+# Donations
+
+Any donations are gratefully accepted. Donations will be split amongst the following projects and contributors:
+
+* 40% [x64dbg]((https://github.com/x64dbg/)
+* 35% [DbgChild](https://github.com/David-Reguera-Garcia-Dreg/DbgChild)
+* 15% contributors
+* 10% [capstone](https://github.com/aquynh/capstone)
 
 
+# Credits
+
+* [David Reguera Garcia - Dreg](https://github.com/David-Reguera-Garcia-Dreg): DbgChildProcess coding and design
+* [Keith Robertson - mrfearless](https://github.com/mrfearless): Documentation, GUI and icons
 
 
