@@ -1007,10 +1007,10 @@ void pluginSetup()
 
 
     ZeroMemory(rd_value, sizeof(rd_value));
-    auto_enable = true;
+    auto_enable = false;
     if (BridgeSettingGet("dbgchild", "auto_open_logs", rd_value) == false)
     {
-        BridgeSettingSet("dbgchild", "auto_open_logs", "true");
+        BridgeSettingSet("dbgchild", "auto_open_logs", "false");
         BridgeSettingFlush();
     }
     if (BridgeSettingGet("dbgchild", "auto_open_logs", rd_value))
