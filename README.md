@@ -107,7 +107,7 @@ Once extracted the contents should look something like this:
 
 Any donations are gratefully accepted. Donations will be split amongst the following projects and contributors:
 
-* 40% [x64dbg]((https://github.com/x64dbg/)
+* 40% [x64dbg](https://github.com/x64dbg/)
 * 35% [DbgChild](https://github.com/David-Reguera-Garcia-Dreg/DbgChild)
 * 15% contributors
 * 10% [capstone](https://github.com/aquynh/capstone)
