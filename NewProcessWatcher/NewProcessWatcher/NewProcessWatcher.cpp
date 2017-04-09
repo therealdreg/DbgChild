@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 
     if (old_processes == FALSE)
     {
-        HANDLE hMutex = OpenMutexW(MUTEX_ALL_ACCESS, 0, L"NewProcessWatcherDreg");
+        HANDLE hMutex = OpenMutexW(MUTANT_ALL_ACCESS, 0, L"NewProcessWatcherDreg");
 
         if (!hMutex)
         {
@@ -145,6 +145,7 @@ int main(int argc, char** argv)
         }
         else
         {
+            ReleaseMutex(hMutex);
             CloseHandle(hMutex);
             MessageBoxW(NULL, L"THERE IS OTHER INSTANCE RUNNING!", L"NewProcessWatcher", MB_ICONERROR);
             return -1;

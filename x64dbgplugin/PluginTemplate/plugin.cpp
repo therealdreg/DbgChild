@@ -123,11 +123,12 @@ void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
     }
     else
     {
-        hMutex = OpenMutexW(MUTEX_ALL_ACCESS, 0, L"NewProcessWatcherDreg");
+        hMutex = OpenMutexW(MUTANT_ALL_ACCESS, 0, L"NewProcessWatcherDreg");
+        ReleaseMutex(hMutex);
+        CloseHandle(hMutex);
         if (!hMutex)
         {
             char rd_value[MAX_PATH] = { 0 };
-            ReleaseMutex(hMutex);
 
             result = 0;
             if (BridgeSettingGet("dbgchild", "watcher_no_ask", rd_value))
