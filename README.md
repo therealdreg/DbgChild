@@ -56,51 +56,51 @@ Once extracted the contents should look something like this:
 
 # Plugin Menu Overview
 
-![](/Images/HookProcess.png?raw=true) Hook Process Creation - CreateProcessPatch.exe hooks ZwCreateUserProcess and loads DbgChildHookDLL.dll. There is a x86 version and x64 version of CreateProcessPatch.exe
+![](/Images/HookProcess.png?raw=true) `Hook Process Creation` - CreateProcessPatch.exe hooks ZwCreateUserProcess and loads DbgChildHookDLL.dll. There is a x86 version and x64 version of CreateProcessPatch.exe
 
-![](/Images/Checkmark.png?raw=true) Auto from x32dbg/x64dbg Hook Process Creation - Toggle option to switch on or off the automatic hooking of the process creation. If it is off, then user must manually select Hook Process Creation at some point before child processes are spawned.
+![](/Images/Checkmark.png?raw=true)` Auto from x32dbg/x64dbg Hook Process Creation` - Toggle option to switch on or off the automatic hooking of the process creation. If it is off, then user must manually select Hook Process Creation at some point before child processes are spawned.
 
-![](/Images/ClearCPIDS.png?raw=true) Clear x32|x64\CPIDS - Clear all process id file entries from the x32\CPIDS or x64\CPIDS folder
+![](/Images/ClearCPIDS.png?raw=true) `Clear x32|x64\CPIDS` - Clear all process id file entries from the x32\CPIDS or x64\CPIDS folder
 
-![](/Images/BrowseCPIDS.png?raw=true) Open x32|x64\CPIDS - Opens in explorer the x32\CPIDS or x64\CPIDS folder 
+![](/Images/BrowseCPIDS.png?raw=true) `Open x32|x64\CPIDS` - Opens in explorer the x32\CPIDS or x64\CPIDS folder 
 
-![](/Images/AddCPIDS.png?raw=true) Create New Entry x32|x64\CPIDS - Adds a new entry to the x32\CPIDS or x64\CPIDS folder 
+![](/Images/AddCPIDS.png?raw=true) `Create New Entry x32|x64\CPIDS` - Adds a new entry to the x32\CPIDS or x64\CPIDS folder 
 
-![](/Images/UnpatchNTDLL.png?raw=true) Unpatch NTDLL Entry - Patches the ntdll.dll LdrInitializeThunk function.
+![](/Images/UnpatchNTDLL.png?raw=true) `Unpatch NTDLL Entry` - Patches the ntdll.dll LdrInitializeThunk function.
 
-![](/Images/PatchNTDLL.png?raw=true) Patch NTDLL Entry - Unpatches the ntdll.dll LdrInitializeThunk if it has previously been patched
+![](/Images/PatchNTDLL.png?raw=true) `Patch NTDLL Entry` - Unpatches the ntdll.dll LdrInitializeThunk if it has previously been patched
 
-![](/Images/Checkmark.png?raw=true) Auto From x32dbg|x64dbg Unpatch NTDLL Entry - Toggle option to switch on or off the automatic unpatch of the NTDLL entry when 2nd x64dbg instance is launched for child process. If it is off, then user must manually select Unpatch NTDLL Entry in the 2nd x64dbg instance after it has launched
+![](/Images/Checkmark.png?raw=true) `Auto From x32dbg|x64dbg Unpatch NTDLL Entry` - Toggle option to switch on or off the automatic unpatch of the NTDLL entry when 2nd x64dbg instance is launched for child process. If it is off, then user must manually select Unpatch NTDLL Entry in the 2nd x64dbg instance after it has launched
 
-![](/Images/NewProcessWatcher.png?raw=true) Launch NewProcessWatcher - Starts NewProcessWatcher.exe which monitors the x32\CPIDS or x64\CPIDS folder for new process id files that are created by DbgChildHookDLL.dll when a child process is detected and is about to be spawned
+![](/Images/NewProcessWatcher.png?raw=true) `Launch NewProcessWatcher` - Starts NewProcessWatcher.exe which monitors the x32\CPIDS or x64\CPIDS folder for new process id files that are created by DbgChildHookDLL.dll when a child process is detected and is about to be spawned
 
-![](/Images/NewProcessWatcher.png?raw=true) Launch NewProcessWatcher With Old Processes - 
+![](/Images/NewProcessWatcher.png?raw=true) `Launch NewProcessWatcher With Old Processes` - 
 
-![](/Images/Checkmark.png?raw=true) Launch from x32dbg|x64dbg NewProcessWatcher Without Ask - Toggle option to switch on or off the automatic prompt to launch NewProcessWatcher. If on then when Hook Process Creation is selected, NewProcessWatcher will automatically launch. If off, then it will display a prompt asking user if they wish to launch NewProcessWatcher
+![](/Images/Checkmark.png?raw=true) `Launch from x32dbg|x64dbg NewProcessWatcher Without Ask` - Toggle option to switch on or off the automatic prompt to launch NewProcessWatcher. If on then when Hook Process Creation is selected, NewProcessWatcher will automatically launch. If off, then it will display a prompt asking user if they wish to launch NewProcessWatcher
 
-![](/Images/GotoHook.png?raw=true) Go to Hook Process Creation - Shows in the x32dbg|x64dbg cpu disassembly window the location of the hook code
+![](/Images/GotoHook.png?raw=true) `Go to Hook Process Creation` - Shows in the x32dbg|x64dbg cpu disassembly window the location of the hook code
 
-![](/Images/GotoNTDLL.png?raw=true) Go to NTDLL Patch - Shows in the x32dbg|x64dbg cpu disassembly window the location of the ntdll.dll patch
+![](/Images/GotoNTDLL.png?raw=true) `Go to NTDLL Patch` - Shows in the x32dbg|x64dbg cpu disassembly window the location of the ntdll.dll patch
 
-![](/Images/EditSuspended.png?raw=true) Edit x32|x64 Suspended Command - Opens x86_pre.unicode.txt or x64_pre.unicode.txt in notepad for editing
+![](/Images/EditSuspended.png?raw=true) `Edit x32|x64 Suspended Command` - Opens x86_pre.unicode.txt or x64_pre.unicode.txt in notepad for editing
 
-![](/Images/EditResumed.png?raw=true) Edit x32|x64 Resumed Command - Opens x86_post.unicode.txt or x64_post.unicode.txt in notepad for editing
+![](/Images/EditResumed.png?raw=true) `Edit x32|x64 Resumed Command` - Opens x86_post.unicode.txt or x64_post.unicode.txt in notepad for editing
 
-![](/Images/RemoteHookProcess.png?raw=true) Remote x32|x64 PID Hook Process Creation - Asks for a process id to remotely hook process creation for
+![](/Images/RemoteHookProcess.png?raw=true) `Remote x32|x64 PID Hook Process Creation` - Asks for a process id to remotely hook process creation for
 
-![](/Images/RemoteNTDLLPatch.png?raw=true) Remote x32|x64 PID Patch NTDLL Entry - Asks for a process id to remotely patch the ntdll.dll LdrInitializeThunk function for
+![](/Images/RemoteNTDLLPatch.png?raw=true) `Remote x32|x64 PID Patch NTDLL Entry` - Asks for a process id to remotely patch the ntdll.dll LdrInitializeThunk function for
 
-![](/Images/RemoteNTDLLUnpatch.png?raw=true) Remote x32|x64 PID Unpatch NTDLL Entry - Asks for a process id to remotely unpatch the ntdll.dll LdrInitializeThunk if it has previously been patched
+![](/Images/RemoteNTDLLUnpatch.png?raw=true) `Remote x32|x64 PID Unpatch NTDLL Entry` - Asks for a process id to remotely unpatch the ntdll.dll LdrInitializeThunk if it has previously been patched
 
-![](/Images/OpenLogs.png?raw=true) Open Logs - Open log files
+![](/Images/OpenLogs.png?raw=true) `Open Logs` - Open log files
 
-![](/Images/ClearLogs.png?raw=true) Clear Logs - Clear log files
+![](/Images/ClearLogs.png?raw=true) `Clear Logs` - Clear log files
 
-![](/Images/Checkmark.png?raw=true) Auto From x32|x64 Open Logs - Toggle option to switch on or off the automatic opening of the log file
+![](/Images/Checkmark.png?raw=true) `Auto From x32|x64 Open Logs` - Toggle option to switch on or off the automatic opening of the log file
 
-![](/Images/Help.png?raw=true) Help - Displays information on the usage of the plugin and its operations
+![](/Images/Help.png?raw=true) `Help` - Displays information on the usage of the plugin and its operations
 
-![](/Images/DbgChildProcess.png?raw=true) Plugin Info By Dreg - About dialog box showing information about this plugin
+![](/Images/DbgChildProcess.png?raw=true) `Plugin Info By Dreg` - About dialog box showing information about this plugin
 
 
 
