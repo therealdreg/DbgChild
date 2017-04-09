@@ -404,7 +404,12 @@ DWORD WINAPI ProcesCreated(_In_ LPVOID lpParameter)
         &pi
     );
 
+    wprintf(L"TID[%d] - PID: %d from Pre Executed: %s\n", GetCurrentThreadId(), pi.dwProcessId, pre_cmd);
+
     WaitForSingleObject(pi.hProcess, INFINITE);
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
 
     HANDLE hFile = CreateFileW(
         full_path,                // name of the write
@@ -494,7 +499,12 @@ DWORD WINAPI PostProcess(_In_ LPVOID lpParameter)
         &pi
     );
 
+    wprintf(L"TID[%d] - PID: %d from Post Executed: %s\n", GetCurrentThreadId(), pi.dwProcessId, post_cmd);
+
     WaitForSingleObject(pi.hProcess, INFINITE);
+
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
 
     return 0;
 }

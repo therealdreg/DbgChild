@@ -82,6 +82,34 @@ PLUG_EXPORT void CBDEBUGEVENT(CBTYPE cbType, PLUG_CB_DEBUGEVENT* info)
 {
 }
 
+DWORD ExecuteProcW(WCHAR* op_type, WCHAR* exe, WCHAR* args, WCHAR* cur_path, bool wait_end_process)
+{
+    SHELLEXECUTEINFOW shell_args = { 0 };
+
+    shell_args.cbSize = sizeof(shell_args);
+    shell_args.nShow = SW_SHOWNORMAL;
+    shell_args.lpVerb = op_type;
+    shell_args.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shell_args.lpDirectory = cur_path;
+    shell_args.lpParameters = args;
+    shell_args.lpFile = exe;
+
+    ShellExecuteExW(&shell_args);
+
+    DWORD ret_pid = GetProcessId(shell_args.hProcess);
+
+    _plugin_logprintf("[" PLUGIN_NAME "] (PID log: %d) %wS %wS\n", ret_pid, exe, args);
+
+    if (wait_end_process)
+    {
+        WaitForSingleObject(shell_args.hProcess, INFINITE);
+    }
+
+    CloseHandle(shell_args.hProcess);
+
+    return ret_pid;
+}
+
 void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
 {
     int result = IDCANCEL;
@@ -116,7 +144,7 @@ void ExecuteNewProcessLauncher(BOOL old_process, wchar_t* path)
         }
         else
         {
-            _plugin_logprintf("[" PLUGIN_NAME "] NewProcessWatcher already Open");
+            _plugin_logprintf("[" PLUGIN_NAME "] NewProcessWatcher already Open\n");
         }
     }
 
@@ -191,21 +219,7 @@ PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
 
         if (FileExistW(cpids_x32_path) || FileExistW(cpids_x64_path))
         {
-            SHELLEXECUTEINFOW shell_args = { 0 };
-
-            shell_args.cbSize = sizeof(shell_args);
-            shell_args.nShow = SW_SHOWNORMAL;
-            shell_args.lpVerb = L"runas";
-            shell_args.fMask = SEE_MASK_NOCLOSEPROCESS;
-            shell_args.lpDirectory = cur_path;
-            shell_args.lpParameters = args;
-            shell_args.lpFile = exe;
-
-            ShellExecuteExW(&shell_args);
-
-            WaitForSingleObject(shell_args.hProcess, INFINITE);
-
-            CloseHandle(shell_args.hProcess);
+            ExecuteProcW(L"runas", exe, args, cur_path, true);
         }
     }
 
@@ -243,21 +257,7 @@ PLUG_EXPORT void CBCREATEPROCESS(CBTYPE cbType, PLUG_CB_CREATEPROCESS* info)
                 wcscat_s(args, L" l");
             }
 
-            SHELLEXECUTEINFOW shell_args = { 0 };
-
-            shell_args.cbSize = sizeof(shell_args);
-            shell_args.nShow = SW_SHOWNORMAL;
-            shell_args.lpVerb = L"runas";
-            shell_args.fMask = SEE_MASK_NOCLOSEPROCESS;
-            shell_args.lpDirectory = path;
-            shell_args.lpParameters = args;
-            shell_args.lpFile = exe;
-
-            ShellExecuteExW(&shell_args);
-
-            WaitForSingleObject(shell_args.hProcess, INFINITE);
-
-            CloseHandle(shell_args.hProcess);
+            ExecuteProcW(L"runas", exe, args, path, true);
         }
     }
 }
@@ -769,7 +769,7 @@ PLUG_EXPORT void CBMENUENTRY(CBTYPE cbType, PLUG_CB_MENUENTRY* info)
         info->hEntry == MENU_OPENLOGS
         )
     {
-        ShellExecuteW(NULL, op_type, exe, args, path, SW_SHOWNORMAL);
+        ExecuteProcW(op_type, exe, args, path, false);
     }
 
     if (dis_cmd != NULL)
