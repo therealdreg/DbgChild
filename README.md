@@ -1,6 +1,6 @@
 # DbgChildProcess - Debug Child Process Tool 
 
-[[Images/DbgChildProcess.png]] DbgChildProcess by David Reguera Garcia - Dreg, is a plugin for the x86/x64 x64dbg debugger. DbgChildProcess allows you to debug child processes in another x64dbg instance.
+![[Images/DbgChildProcess.png]] DbgChildProcess by David Reguera Garcia - Dreg, is a plugin for the x86/x64 x64dbg debugger. DbgChildProcess allows you to debug child processes in another x64dbg instance.
 
 # Features
 
