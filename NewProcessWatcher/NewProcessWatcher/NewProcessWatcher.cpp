@@ -145,6 +145,7 @@ int main(int argc, char** argv)
         }
         else
         {
+            CloseHandle(hMutex);
             MessageBoxW(NULL, L"THERE IS OTHER INSTANCE RUNNING!", L"NewProcessWatcher", MB_ICONERROR);
             return -1;
         }
