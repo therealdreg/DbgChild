@@ -112,6 +112,7 @@ Any donations are gratefully accepted. Donations will be split amongst the follo
 * 15% Contributors
 * 10% [Capstone](https://github.com/aquynh/capstone)
 
+To donate to DbgChild, please visit the bountysource page [here](https://www.bountysource.com/teams/dbgchild)
 
 # Credits
 
