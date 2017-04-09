@@ -15,8 +15,8 @@ rmdir /S /Q x64dbgplugin\bin
 
 call %vcvarsall%
 devenv "NewProcessWatcher\NewProcessWatcher.sln" /rebuild "Release|x86"
-devenv "x64dbgplugin\dbgchildprocess.sln" /rebuild "Release|Win32" 
-devenv "x64dbgplugin\dbgchildprocess.sln" /rebuild "Release|x64" 
+devenv "x64dbgplugin\dbgchild.sln" /rebuild "Release|Win32" 
+devenv "x64dbgplugin\dbgchild.sln" /rebuild "Release|x64" 
 devenv "NTDLLEntryPatch\NTDLLEntryPatch.sln" /rebuild "Release|x86" 
 devenv "NTDLLEntryPatch\NTDLLEntryPatch.sln" /rebuild "Release|x64"
 devenv "CreateProcessPatch\CreateProcessPatch.sln" /rebuild "Release|x86"
@@ -42,11 +42,11 @@ copy NewProcessWatcher\*.txt DbgChild_Release\release\
 copy NTDLLEntryPatch\Release\NTDLLEntryPatch.exe DbgChild_Release\release\x32
 copy CreateProcessPatch\Release\CreateProcessPatch.exe DbgChild_Release\release\x32
 copy DbgChildHookDLL\Release\DbgChildHookDLL.dll DbgChild_Release\release\x32
-copy x64dbgplugin\bin\x32\dbgchildprocess.dp32 DbgChild_Release\release\x32\plugins
+copy x64dbgplugin\bin\x32\dbgchild.dp32 DbgChild_Release\release\x32\plugins
 
 copy NTDLLEntryPatch\x64\Release\NTDLLEntryPatch.exe DbgChild_Release\release\x64
 copy CreateProcessPatch\x64\Release\CreateProcessPatch.exe DbgChild_Release\release\x64
 copy DbgChildHookDLL\x64\Release\DbgChildHookDLL.dll DbgChild_Release\release\x64
-copy x64dbgplugin\bin\x64\dbgchildprocess.dp64 DbgChild_Release\release\x64\plugins
+copy x64dbgplugin\bin\x64\dbgchild.dp64 DbgChild_Release\release\x64\plugins
 
 pause

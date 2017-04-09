@@ -3,7 +3,7 @@
 #include "pluginmain.h"
 
 //plugin data
-#define PLUGIN_NAME "dbgchildprocess"
+#define PLUGIN_NAME "dbgchild"
 #define PLUGIN_VERSION 1
 
 void GetPIDFromUserDialogW(wchar_t * out_pid_str);

@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{176822C9-3CF8-41A9-81AB-8BBD3E3E2A32}</ProjectGuid>
     <RootNamespace>PluginTemplate</RootNamespace>
-    <ProjectName>dbgchildprocess</ProjectName>
+    <ProjectName>dbgchild</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
