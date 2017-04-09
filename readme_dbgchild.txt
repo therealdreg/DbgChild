@@ -1,6 +1,6 @@
-# DbgChildProcess - Debug Child Process Tool 
+# DbgChild - Debug Child Process Tool 
 
-DbgChildProcess by David Reguera Garcia - Dreg, is a plugin for the x86/x64 x64dbg debugger. DbgChildProcess allows you to debug child processes in another x64dbg instance.
+DbgChild is a stand alone tool for debugging child processes. DbgChild can be used in conjunction with a plugin for a debugger - and currently DbgChild supports a plugin for the x86/x64 x64dbg debugger. Support for DbgChild can be extended to OllyDbg and Immunity debugger if so required via Bountysource.
 
 # Features
 
@@ -10,13 +10,13 @@ DbgChildProcess by David Reguera Garcia - Dreg, is a plugin for the x86/x64 x64d
 * Modify the suspend (pre) and resume (post) logic to adapt to your own requirements
 
 # Content
-The DbgChildProcess comprises a number of components to accomplish the task of launching a new x64dbg instance when a child process is hooked and detected. These components are:
+The DbgChild comprises a number of components to accomplish the task of launching a new x64dbg instance when a child process is hooked and detected. These components are:
 
 * CreateProcessPatch.exe - Hook ZwCreateUserProcess (two separate exe files for x86 and x64) and loads DbgChildHookDLL.dll
 * DbgChildHookDLL.dll - (two separate dll files for x86 and x64) - outputs process id's to CPIDS folder
 * NTDLLEntryPatch.exe - Patches or unpatches LdrInitializeThunk (two separate exe files for x86 and x64)
-* DbgChildProcess.dp32 - x64dbg plugin x86 
-* DbgChildProcess.dp64 - x64dbg plugin x64
+* DbgChild.dp32 - x64dbg plugin x86 
+* DbgChild.dp64 - x64dbg plugin x64
 * NewProcessWatcher.exe - Watches for new child processes from the CPIDS folder
 * x64_post.unicode.txt - Support file
 * x64_pre.unicode.txt - Support file
@@ -24,7 +24,7 @@ The DbgChildProcess comprises a number of components to accomplish the task of l
 * x86_pre.unicode.txt - Support file
 
 # Download
-Download the latest release of DbgChildProcess at: https://github.com/David-Reguera-Garcia-Dreg/DbgChild/releases
+Download the latest release of DbgChild at: https://github.com/David-Reguera-Garcia-Dreg/DbgChild/releases
 
 # Installation
 
@@ -42,16 +42,16 @@ Once extracted the contents should look something like this:
 \x64dbg\x32\CreateProcessPatch.exe
 \x64dbg\x32\DbgChildHookDLL.dll
 \x64dbg\x32\NTDLLEntryPatch.exe
-\x64dbg\x32\plugins\DbgChildProcess.dp32
+\x64dbg\x32\plugins\DbgChild.dp32
 \x64dbg\x32\CPIDS\
 \x64dbg\x64\CreateProcessPatch.exe
 \x64dbg\x64\DbgChildHookDLL.dll
 \x64dbg\x64\NTDLLEntryPatch.exe
-\x64dbg\x64\plugins\DbgChildProcess.dp64
+\x64dbg\x64\plugins\DbgChild.dp64
 \x64dbg\x64\CPIDS\
 ```
 
-* Menu options for the DbgChildProcess plugin is available under the "Plugins" menu in the main x64dbg window
+* Menu options for the DbgChild plugin is available under the "Plugins" menu in the main x64dbg window
 
 
 # Plugin Menu Overview
@@ -168,4 +168,17 @@ Plugin Info By Dreg
   About dialog box showing information about this plugin
   
   
-  
+# Donations
+
+Any donations are gratefully accepted. Donations will be split amongst the following projects and contributors:
+
+* 40% x64dbg: https://github.com/x64dbg
+* 35% DbgChild: https://github.com/David-Reguera-Garcia-Dreg/DbgChild
+* 15% Contributors
+* 10% Capstone: https://github.com/aquynh/capstone
+
+
+# Credits
+
+* David Reguera Garcia - Dreg: DbgChild coding and design
+* Keith Robertson - mrfearless: Documentation, GUI and icons
