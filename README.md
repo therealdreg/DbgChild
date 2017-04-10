@@ -1,6 +1,6 @@
 # DbgChild - Debug Child Process Tool 
 
-![](/Images/DbgChildProcess.png?raw=true) DbgChild is a stand alone tool for debugging child processes. DbgChild can be used in conjunction with a plugin for a debugger - and currently DbgChild supports a plugin for the x86/x64 x64dbg debugger. Support for DbgChild can be extended to OllyDbg and Immunity debugger if so required via Bountysource(https://www.bountysource.com/teams/dbgchild).
+![](/Images/DbgChildProcess.png?raw=true) DbgChild is a stand alone tool for debugging child processes. DbgChild can be used in conjunction with a plugin for a debugger - and currently DbgChild supports a plugin for the x86/x64 x64dbg debugger. Support for DbgChild can be extended to OllyDbg and Immunity debugger if so required via [Bountysource](https://www.bountysource.com/teams/dbgchild).
 
 # Features
 
