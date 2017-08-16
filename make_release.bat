@@ -14,15 +14,15 @@ rmdir /S /Q DbgChildHookDLL\x64
 rmdir /S /Q x64dbgplugin\bin
 
 call %vcvarsall%
-devenv "NewProcessWatcher\NewProcessWatcher.sln" /rebuild "Release|x86"
-devenv "x64dbgplugin\dbgchild.sln" /rebuild "Release|Win32" 
-devenv "x64dbgplugin\dbgchild.sln" /rebuild "Release|x64" 
-devenv "NTDLLEntryPatch\NTDLLEntryPatch.sln" /rebuild "Release|x86" 
-devenv "NTDLLEntryPatch\NTDLLEntryPatch.sln" /rebuild "Release|x64"
-devenv "CreateProcessPatch\CreateProcessPatch.sln" /rebuild "Release|x86"
-devenv "CreateProcessPatch\CreateProcessPatch.sln" /rebuild "Release|x64"
-devenv "DbgChildHookDLL\DbgChildHookDLL.sln" /rebuild "Release|x86" 
-devenv "DbgChildHookDLL\DbgChildHookDLL.sln" /rebuild "Release|x64" 
+msbuild "NewProcessWatcher\NewProcessWatcher.sln" /t:Rebuild /p:Configuration=Release;Platform=x86
+msbuild "x64dbgplugin\dbgchild.sln" /t:Rebuild /p:Configuration=Release;Platform=Win32
+msbuild "x64dbgplugin\dbgchild.sln" /t:Rebuild /p:Configuration=Release;Platform=x64
+msbuild "NTDLLEntryPatch\NTDLLEntryPatch.sln" /t:Rebuild /p:Configuration=Release;Platform=x86
+msbuild "NTDLLEntryPatch\NTDLLEntryPatch.sln" /t:Rebuild /p:Configuration=Release;Platform=x64
+msbuild "CreateProcessPatch\CreateProcessPatch.sln" /t:Rebuild /p:Configuration=Release;Platform=x86
+msbuild "CreateProcessPatch\CreateProcessPatch.sln" /t:Rebuild /p:Configuration=Release;Platform=x64
+msbuild "DbgChildHookDLL\DbgChildHookDLL.sln" /t:Rebuild /p:Configuration=Release;Platform=x86
+msbuild "DbgChildHookDLL\DbgChildHookDLL.sln" /t:Rebuild /p:Configuration=Release;Platform=x64
 
 mkdir DbgChild_Release
 mkdir DbgChild_Release\release
