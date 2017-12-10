@@ -4,6 +4,10 @@
 
 [![Bountysource](https://api.bountysource.com/badge/issue?issue_id=43958550)](https://www.bountysource.com/issues/43958550-ollydbg-and-immunity-plugin?utm_source=43958550&utm_medium=shield&utm_campaign=ISSUE_BADGE)
 
+# Example of usage
+
+https://mrexodia.cf/reversing/2017/07/12/Analyzing-torrent-repack-malware
+
 # Features
 
 * Hook process creation for x86 or x64 child processes
