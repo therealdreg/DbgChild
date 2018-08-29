@@ -72,9 +72,9 @@ Once extracted the contents should look something like this:
 
 ![](/Images/AddCPIDS.png?raw=true) `Create New Entry x32|x64\CPIDS` - Adds a new entry to the x32\CPIDS or x64\CPIDS folder 
 
-![](/Images/UnpatchNTDLL.png?raw=true) `Unpatch NTDLL Entry` - Patches the ntdll.dll LdrInitializeThunk function.
+![](/Images/PatchNTDLL.png?raw=true) `Patch NTDLL Entry` - Patches the ntdll.dll LdrInitializeThunk function.
 
-![](/Images/PatchNTDLL.png?raw=true) `Patch NTDLL Entry` - Unpatches the ntdll.dll LdrInitializeThunk if it has previously been patched
+![](/Images/UnpatchNTDLL.png?raw=true) `Unpatch NTDLL Entry` - Unpatches the ntdll.dll LdrInitializeThunk if it has previously been patched
 
 ![](/Images/Checkmark.png?raw=true) `Auto From x32dbg|x64dbg Unpatch NTDLL Entry` - Toggle option to switch on or off the automatic unpatch of the NTDLL entry when 2nd x64dbg instance is launched for child process. If it is off, then user must manually select Unpatch NTDLL Entry in the 2nd x64dbg instance after it has launched
 
