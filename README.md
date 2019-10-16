@@ -7,6 +7,7 @@
 # Example of usage
 
 https://mrexodia.cf/reversing/2017/07/12/Analyzing-torrent-repack-malware
+https://mrexodia.github.io/reversing/2017/07/12/Analyzing-torrent-repack-malware
 
 # Features
 
