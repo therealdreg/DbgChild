@@ -16,7 +16,7 @@ You have to select the checkboxes in the DbgChild plugin to automatically attach
 
 ---
 
-WARNING: **You must select the checkboxes in both versions of x64dbg, openning x64dbg.exe and x32dbg.exe**
+**WARNING: You must select the checkboxes in both versions of x64dbg, openning x64dbg.exe and x32dbg.exe**
 
 # Example of usage
 
