@@ -13,11 +13,11 @@ https://www.youtube.com/watch?v=NfA2HAJa0Rk
 
 https://mrexodia.github.io/reversing/2017/07/12/Analyzing-torrent-repack-malware
 
-Recommended settings:
-
-![recommended_settings.png](https://github.com/David-Reguera-Garcia-Dreg/DbgChild/blob/master/recommended_settings.png)
+# Recommended settings
 
 You have to select the checkboxes in the DbgChild plugin to automatically attach x64dbg to any process started by the executable you’re currently debugging:
+
+![recommended_settings.png](https://github.com/David-Reguera-Garcia-Dreg/DbgChild/blob/master/recommended_settings.png)
 
 # Features
 
