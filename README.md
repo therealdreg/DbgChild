@@ -14,7 +14,9 @@ You have to select the checkboxes in the DbgChild plugin to automatically attach
 
 ![recommended_settings.png](https://github.com/David-Reguera-Garcia-Dreg/DbgChild/blob/master/recommended_settings.png)
 
-**You must select the checkboxes in both versions of x64dbg, openning x64dbg.exe and x32dbg.exe**
+---
+
+WARNING: **You must select the checkboxes in both versions of x64dbg, openning x64dbg.exe and x32dbg.exe**
 
 # Example of usage
 
