@@ -6,6 +6,9 @@
 
 # Example of usage
 
+DbgChild x64dbg plugin how to use example video. x32_cmd -> x64_cmd -> x32_cmd -> x32_calc.exe
+https://www.youtube.com/watch?v=NfA2HAJa0Rk
+
 https://mrexodia.cf/reversing/2017/07/12/Analyzing-torrent-repack-malware
 https://mrexodia.github.io/reversing/2017/07/12/Analyzing-torrent-repack-malware
 
