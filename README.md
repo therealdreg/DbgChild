@@ -4,6 +4,8 @@
 
 [![Bountysource](https://api.bountysource.com/badge/issue?issue_id=43958550)](https://www.bountysource.com/issues/43958550-ollydbg-and-immunity-plugin?utm_source=43958550&utm_medium=shield&utm_campaign=ISSUE_BADGE)
 
+---
+
 **WARNING: If you are using an AV this plugin can fail (AV hooks in ZwCreateUserProcess etc...)**
 
 # Example of usage
