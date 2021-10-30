@@ -4,6 +4,8 @@
 
 [![Bountysource](https://api.bountysource.com/badge/issue?issue_id=43958550)](https://www.bountysource.com/issues/43958550-ollydbg-and-immunity-plugin?utm_source=43958550&utm_medium=shield&utm_campaign=ISSUE_BADGE)
 
+Please, consider make a donation: https://github.com/sponsors/therealdreg
+
 ---
 
 **WARNING: If you are using an AV this plugin can fail (AV hooks in ZwCreateUserProcess etc...)**
@@ -126,18 +128,6 @@ Once extracted the contents should look something like this:
 ![](/Images/Help.png?raw=true) `Help` - Displays information on the usage of the plugin and its operations
 
 ![](/Images/DbgChildProcess.png?raw=true) `Plugin Info By Dreg` - About dialog box showing information about this plugin
-
-
-# Donations
-
-Any donations are gratefully accepted. Donations will be split amongst the following projects and contributors:
-
-* 40% [x64dbg](https://github.com/x64dbg/)
-* 35% [DbgChild](https://github.com/David-Reguera-Garcia-Dreg/DbgChild)
-* 15% Contributors
-* 10% [Capstone](https://github.com/aquynh/capstone)
-
-To donate to DbgChild, please visit the bountysource page [here](https://www.bountysource.com/teams/dbgchild)
 
 # Credits
 
