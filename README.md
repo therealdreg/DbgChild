@@ -27,6 +27,8 @@ https://www.youtube.com/watch?v=NfA2HAJa0Rk
 
 https://mrexodia.github.io/reversing/2017/07/12/Analyzing-torrent-repack-malware
 
+https://ragegorilla08.medium.com/qakbot-analysis-d5ea5f5a38c4
+
 # Features
 
 * Hook process creation for x86 or x64 child processes
@@ -129,7 +131,7 @@ Once extracted the contents should look something like this:
 
 # Credits
 
-* [David Reguera Garcia - Dreg](https://github.com/David-Reguera-Garcia-Dreg): DbgChild coding and design
+* [David Reguera Garcia - Dreg](https://github.com/therealdreg): DbgChild coding and design
 * [Keith Robertson - mrfearless](https://github.com/mrfearless): Documentation, GUI and icons
 
 
